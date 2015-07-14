@@ -1,0 +1,21 @@
+to implement:
+ENUMERATION_IO:
+FLOAT_IO: GET (string)
+INTEGER_IO: GET (file and string), PUT (file)
+TEXT_IO:
+    CLOSE
+    CREATE
+    DELETE
+    GET
+    GET_LINE
+    LOOK_AHEAD
+    NEW_LINE
+    OPEN
+    PUT
+    PUT_LINE
+    RESET
+    SET_COL
+    SET_INPUT
+    SET_OUTPUT
+    SKIP_LINE
+DEFAULT_WIDTH
