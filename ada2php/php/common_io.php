@@ -6,40 +6,49 @@ class common_io
     const inout_file  = 'w+';
     const out_file    = 'w';
 
-    public static $open_filenames;
+    public static $filenames;
 
-    public function close()
+    public static function close($file)
     {
-
+        if (! @fclose($file)) {
+            throw new Exception("Cannot close file $name");
+        }
     }
 
     public static function create(&$file, $mode = self::out_file, $name = null)
     {
-        if (! $name) {
+        if (! $name and ! $file = tmpfile()) {
+            throw new Exception('Cannot create temp file');
 
+        } elseif (! $file = @fopen($name, $mode)) {
+            throw new Exception("Cannot create file $name");
         }
 
         if ($name) {
-            if (! $file = @fopen($name, $mode)) {
-                throw new Exception("Cannot create file $name");
-            }
-
-        } else {
-            if (! $file = tmpfile()) {
-                throw new Exception('Cannot create temp file');
-            }
+            self::$filenames[(int) $file] = $name;
         }
-
-        self::$open_filenames[(int) $file] = $name;
     }
 
-    public static function get_temp_filename()
+    public static function delete($file)
     {
-        if (! $name = tempnam(sys_get_temp_dir(), 'www')) {
-            throw new Exception('Cannot get temp file name');
+        if (! isset(self::$filenames[(int) $file])) {
+            throw new Exception('No such file');
         }
 
-        return $name;
+        self::close($file);
+
+        $filename = self::$filenames[(int) $file];
+
+        if (! @unlink($filename)) {
+            throw new Exception("Cannot delete file $filename");
+        }
+    }
+
+    public static function is_open($file)
+    {
+        $is_open = (bool) @fstat($file);
+
+        return $file;
     }
 
     public static function open(&$file, $mode , $name)

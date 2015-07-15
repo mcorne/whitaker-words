@@ -3,7 +3,7 @@ ENUMERATION_IO:
 FLOAT_IO: GET (string)
 INTEGER_IO: GET (file and string), PUT (file)
 TEXT_IO:
-    CLOSE
+X    CLOSE
     CREATE
     DELETE
     GET
@@ -18,10 +18,10 @@ TEXT_IO:
     SET_INPUT
     SET_OUTPUT
     SKIP_LINE
-DICT_IO:
+DIRECT_IO:
 X    CREATE
-    DELETE
-    IS_OPEN
+X    DELETE
+X    IS_OPEN
 X    OPEN
     READ
     SET_INDEX
