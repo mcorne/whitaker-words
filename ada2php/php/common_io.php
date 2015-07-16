@@ -8,55 +8,61 @@ class common_io
 
     public static $filenames;
 
-    public static function close($file)
+    public static function close($handle)
     {
-        if (! @fclose($file)) {
-            throw new Exception("Cannot close file $name");
+        if (! @fclose($handle)) {
+            throw new Exception('Cannot close file');
         }
     }
 
-    public static function create(&$file, $mode = self::out_file, $name = null)
+    public static function create(&$handle, $mode = self::out_file, $filename = null)
     {
-        if (! $name and ! $file = tmpfile()) {
-            throw new Exception('Cannot create temp file');
+        if ($filename) {
+            if (! $handle = @fopen($filename, $mode)) {
+                throw new Exception("Cannot create file $filename");
+            }
 
-        } elseif (! $file = @fopen($name, $mode)) {
-            throw new Exception("Cannot create file $name");
-        }
+            self::$filenames[(int) $handle] = $filename;
 
-        if ($name) {
-            self::$filenames[(int) $file] = $name;
+        } else {
+            if (! $handle = tmpfile()) {
+                throw new Exception('Cannot create temp file');
+            }
         }
     }
 
-    public static function delete($file)
+    public static function delete($handle)
     {
-        if (! isset(self::$filenames[(int) $file])) {
-            throw new Exception('No such file');
-        }
-
-        self::close($file);
-
-        $filename = self::$filenames[(int) $file];
+        self::close($handle);
+        $filename = self::name($handle);
 
         if (! @unlink($filename)) {
             throw new Exception("Cannot delete file $filename");
         }
     }
 
-    public static function is_open($file)
+    public static function is_open($handle)
     {
-        $is_open = (bool) @fstat($file);
+        $is_open = (bool) @fstat($handle);
 
-        return $file;
+        return $is_open;
     }
 
-    public static function open(&$file, $mode , $name)
+    public static function name($handle)
     {
-        if (! file_exists($name)) {
-            throw new Exception("File does not exist $name");
+        if (! isset(self::$filenames[(int) $handle])) {
+            throw new Exception('No such file');
         }
 
-        self::create($file, $mode, $name);
+        return self::$filenames[(int) $handle];
+    }
+
+    public static function open(&$handle, $mode , $filename)
+    {
+        if (! file_exists($filename)) {
+            throw new Exception("File does not exist $filename");
+        }
+
+        self::create($handle, $mode, $filename);
     }
 }
