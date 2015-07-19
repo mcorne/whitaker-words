@@ -11,10 +11,6 @@ abstract class type
      */
     public function __construct($value = null)
     {
-        if (is_null($value)) {
-            return;
-        }
-
         $this->__set('value', $value);
     }
 
@@ -43,17 +39,21 @@ abstract class type
             throw new Exception("Invalid property: $name");
         }
 
-        $this->validate($value);
-        $this->set_value($value);
+        if (is_null($value)) {
+            $this->data = null;
+        } else {
+            $this->validate($value);
+            $this->set_value($value);
+        }
     }
 
     public function __toString()
     {
-        if (! is_scalar($this->data)) {
-            throw new Exception("Cannot convert non scalar to string");
+        if (is_null($this->data) or is_scalar($this->data)) {
+            return (string) $this->data;
         }
 
-        return (string) $this->data;
+        throw new Exception("Cannot convert non scalar to string"); // actually results in a fatal error
     }
 
     /**
@@ -154,7 +154,10 @@ abstract class type
         $sub_type->create_sub_type($type_name, $arg1, $arg2);
     }
 
-    abstract public function validate($value);
+    public function validate($value)
+    {
+        return true;
+    }
 
     /**
      *

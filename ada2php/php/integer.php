@@ -47,8 +47,10 @@ class integer extends type
      */
     public function validate($value)
     {
-        $this->validate_integer($value);
-        $this->validate_range($value);
+        if (! is_null($value)) {
+            $this->validate_integer($value);
+            $this->validate_range($value);
+        }
     }
 
     /**
@@ -90,15 +92,8 @@ class integer extends type
      */
     public function validate_sub_type_properties($min = null, $max = null)
     {
-        $integer = new integer();
-
-        if (! is_null($min)) {
-            $integer->validate_integer($min);
-        }
-
-        if (! is_null($max)) {
-            $integer->validate_integer($max);
-        }
+        parent::validate($min);
+        parent::validate($max);
     }
 }
 
