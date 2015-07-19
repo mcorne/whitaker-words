@@ -2,12 +2,21 @@
 require_once '../php/integer.php';
 
 
-integer_sub_type::add('which_type', 0, 9);
-integer_sub_type::add('variant_type', 0, 9);
+integer::sub_type('which_type', 0, 9);
+integer::sub_type('variant_type', 0, 9);
 
 $a = which_type::create(1);
 $b = which_type::create(3);
-$c = which_type::create();
-$c->value = $a->value + $b->value;
+$c = integer::create(7, 0, 9);
 
-echo $c;
+// $d = which_type::create();
+$d = integer::create(null, 0, 12);
+$d->value = $a->value + $b->value + $c->value;
+
+echo $d;
+
+exit;
+
+integer::sub_type('which_type', 0, 9);
+integer::create(1);
+integer::create(1, 0, 9);

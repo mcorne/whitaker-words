@@ -56,24 +56,23 @@ abstract class type
         return (string) $this->data;
     }
 
-    public static function add($type_name, $arg1 = null, $arg2 = null)
-    {
-        if (class_exists($type_name, false)) {
-            throw new Exception("Type already exists: $type_name");
-        }
-
-        static::validate_type($arg1, $arg2);
-        static::create_type($type_name, $arg1, $arg2);
-    }
-
     /**
      *
      * @param mixed $value
+     * @param mixed $arg1
+     * @param mixed $arg2
      * @return object
      */
-    public static function create($value = null)
+    public static function create($value = null, $arg1 = null, $arg2 = null)
     {
-        return new static($value);
+        if (func_num_args() > 1) {
+            $type = self::create_temp_sub_type($value, $arg1, $arg2);
+
+        } else {
+            $type = new static($value);
+        }
+
+        return $type;
     }
 
     /**
@@ -83,9 +82,32 @@ abstract class type
      * @param mixed $arg2
      * @throws Exception
      */
-    public static function create_type($type_name, $arg1 = null, $arg2 = null)
+    public function create_sub_type($type_name, $arg1 = null, $arg2 = null)
+    {
+        $this->validate_sub_type_properties($arg1, $arg2);
+        $this->create_sub_type_class($type_name, $arg1, $arg2);
+    }
+
+    /**
+     *
+     * @param string $type_name
+     * @param mixed $arg1
+     * @param mixed $arg2
+     * @throws Exception
+     */
+    public function create_sub_type_class($type_name, $arg1 = null, $arg2 = null)
     {
         throw new Exception("Type creation method unavailable for $type_name");
+    }
+
+    public static function create_temp_sub_type($value = null, $arg1 = null, $arg2 = null)
+    {
+        $type = new static();
+        $temp_sub_type_name = $type->get_temp_type_name();
+        $type->create_sub_type($temp_sub_type_name, $arg1, $arg2);
+        $temp_sub_type = new $temp_sub_type_name($value);
+
+        return $temp_sub_type;
     }
 
     /**
@@ -104,7 +126,33 @@ abstract class type
         return new $type_name($value);
     }
 
+    public function get_temp_type_name()
+    {
+        static $number = 0;
+
+        $temp_type_name = 'temp_type_' . $number++;
+
+        return $temp_type_name;
+    }
+
     abstract public function set_value($value);
+
+    /**
+     *
+     * @param string $type_name
+     * @param mixed $arg1
+     * @param mixed $arg2
+     * @throws Exception
+     */
+    public static function sub_type($type_name, $arg1 = null, $arg2 = null)
+    {
+        if (class_exists($type_name, false)) {
+            throw new Exception("Type already exists: $type_name");
+        }
+
+        $sub_type = new static();
+        $sub_type->create_sub_type($type_name, $arg1, $arg2);
+    }
 
     abstract public function validate($value);
 
@@ -114,7 +162,7 @@ abstract class type
      * @param mixed $arg2
      * @throws Exception
      */
-    public static function validate_type($arg1 = null, $arg2 = null)
+    public function validate_sub_type_properties($arg1 = null, $arg2 = null)
     {
         throw new Exception('Type validation method unavailable');
     }
