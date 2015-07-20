@@ -3,9 +3,35 @@ require_once 'type.php';
 
 class enumeration extends type
 {
-    public $values;
     public $indexes;
+    public $values;
 
+    /**
+     *
+     * @param string $type_name
+     * @param mixed $values
+     * @param null $unused
+     * @return string
+     */
+    public function create_type_class($type_name, $values = null, $unused = null)
+    {
+        $exported_value   = var_export($values, true);
+        $exported_indexes = var_export($this->indexes, true);
+
+        $class = "
+            class $type_name extends enumeration{
+                public \$indexes = $exported_indexes;
+                public \$values  = $exported_value;
+            }
+            ";
+
+        return $class;
+    }
+
+    /**
+     *
+     * @param mixed $value
+     */
     public function set_value($value)
     {
         $this->data = $value;

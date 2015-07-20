@@ -51,15 +51,9 @@ echo $i;
 echo "\n";
 // $i->value = 456;
 
-class day extends enumeration
-{
-    public $values = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-    public $indexes = ['mon' => 0, 'tue' => 1, 'wed' => 3, 'thu' => 4, 'fri' => 5, 'sat' => 6, 'sun' => 7];
-}
+enumeration::new_type('day', ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
 $j = day::create('mon');
 echo $j;
 echo "\n";
 
 exit;
-
-record::type();

@@ -11,24 +11,22 @@ class integer extends type
      * @param string $type_name
      * @param int $min
      * @param int $max
+     * @return string
      */
-    public function load_type_class($type_name, $min = null, $max = null)
+    public function create_type_class($type_name, $min = null, $max = null)
     {
-        $class[] = "class $type_name extends integer";
-        $class[] = '{';
+        $max = is_null($max) ? 'null' : $max;
+        $min = is_null($min) ? 'null' : $min;
 
-        if (! is_null($min)) {
-            $class[] = "public \$min = $min;";
-        }
+        $class = "
+            class $type_name extends integer
+            {
+                public \$min = $min;
+                public \$max = $max;
+            }
+            ";
 
-        if (! is_null($max)) {
-            $class[] = "public \$max = $max;";
-        }
-
-        $class[] = '}';
-
-        $class = implode("\n", $class);
-        eval($class);
+        return $class;
     }
 
     /**

@@ -135,6 +135,18 @@ class type
     /**
      *
      * @param string $type_name
+     * @param mixed $arg1
+     * @param mixed $arg2
+     * @throws Exception
+     */
+    public function create_type_class($type_name, $arg1 = null, $arg2 = null)
+    {
+        throw new Exception("Type class creation method unavailable for $type_name");
+    }
+
+    /**
+     *
+     * @param string $type_name
      * @param mixed $value
      * @return object
      * @throws Exception
@@ -178,7 +190,6 @@ class type
         $args[0] = $type_name;
         call_user_func_array("$parent_type_name::new_type", $args);
     }
-
     /**
      *
      * @param string $type_name
@@ -188,7 +199,11 @@ class type
      */
     public function load_type_class($type_name, $arg1 = null, $arg2 = null)
     {
-        throw new Exception("Type creation method unavailable for $type_name");
+        $class = $this->create_type_class($type_name, $arg1, $arg2);
+
+        if (eval($class) === false) {
+            throw new Exception("Cannot eval type class: $type_name");
+        }
     }
 
     /**
