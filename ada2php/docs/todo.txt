@@ -28,3 +28,5 @@ X    OPEN
     WRITE
 
 DEFAULT_WIDTH
+
+check attributes SIZE, FIRST, LAST etc.

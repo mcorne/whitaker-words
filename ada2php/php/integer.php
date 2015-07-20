@@ -12,7 +12,7 @@ class integer extends type
      * @param int $min
      * @param int $max
      */
-    public function create_sub_type_class($type_name, $min = null, $max = null)
+    public function load_type_class($type_name, $min = null, $max = null)
     {
         $class[] = "class $type_name extends integer";
         $class[] = '{';
@@ -90,17 +90,9 @@ class integer extends type
      * @param int $min
      * @param int $max
      */
-    public function validate_sub_type_properties($min = null, $max = null)
+    public function validate_type_properties($min = null, $max = null)
     {
         parent::validate($min);
         parent::validate($max);
     }
-}
-
-/**
- * eg subtype MONTH is NATURAL range 0..12;
- */
-class natural extends integer
-{
-    protected $min = 0;
 }
