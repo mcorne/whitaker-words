@@ -28,7 +28,7 @@ class enumeration extends type
      * @param array $values
      * @throws Exception
      */
-    public function validate_type_properties($values = null)
+    public function validate_type_properties($values = null, $unused = null)
     {
         foreach($values as $index => $value) {
             if (! is_string($value)) {
