@@ -56,6 +56,10 @@ class enumeration extends type
      */
     public function validate_type_properties($values = null, $unused = null)
     {
+        if (!  is_array($values)) {
+            throw new Exception('Enumeration not an array');
+        }
+
         foreach($values as $index => $value) {
             if (! is_string($value)) {
                 throw new Exception('Non string enumeration value');

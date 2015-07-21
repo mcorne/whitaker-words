@@ -4,7 +4,17 @@ type::$custom_types = require 'custom_types.php';
 class type
 {
     public static $custom_types;
+
+    /**
+     * Stores the type value
+     *
+     * Note that $this->value is used to get or set the type value via a magic method.
+     * $value should never be set as a property, it is unset by security in the constructor.
+     *
+     * @var mixed
+     */
     protected $data;
+
     public $is_constant = false;
 
     // the property $value MUST NOT be added in children
@@ -15,6 +25,7 @@ class type
      */
     public function __construct($value = null)
     {
+        unset($this->value);
         $this->__set('value', $value);
     }
 
@@ -24,11 +35,15 @@ class type
      */
     public function __get($name)
     {
-        if ($name != 'value') {
-            throw new Exception("Undefined property: $name");
+        if ($name == 'value') {
+            return $this->data;
         }
 
-        return $this->data;
+        if (property_exists($this, $name)) {
+            return $this->$name;
+        }
+
+        throw new Exception("Undefined property: $name");
     }
 
     /**
@@ -44,7 +59,7 @@ class type
         }
 
         if ($this->is_constant) {
-            throw new Exception('Constant may not be set');
+            throw new Exception('Constant value may not be set');
         }
 
         if (is_null($value)) {
@@ -68,7 +83,9 @@ class type
             return (string) $this->data;
         }
 
-        throw new Exception("Cannot convert non scalar to string"); // actually results in a fatal error
+        throw new Exception("Cannot convert non scalar to string");
+        // actually results in a fatal error
+        // see http://php.net/manual/en/language.oop5.magic.php#object.tostring
     }
 
     /**
@@ -141,7 +158,7 @@ class type
      */
     public function create_type_class($type_name, $arg1 = null, $arg2 = null)
     {
-        throw new Exception("Type class creation method unavailable for $type_name");
+        throw new Exception(__FUNCTION__ .  '() method unavailable');
     }
 
     /**
@@ -223,11 +240,21 @@ class type
         $new_type->create_type($type_name, $arg1, $arg2);
     }
 
+    /**
+     *
+     * @param mixed $value
+     * @throws Exception
+     */
     public function set_value($value)
     {
-        throw new Exception('Set value method unavailable');
+        throw new Exception(__FUNCTION__ .  '() method unavailable');
     }
 
+    /**
+     *
+     * @param mixed $value
+     * @return boolean
+     */
     public function validate($value)
     {
         return true;
@@ -241,6 +268,6 @@ class type
      */
     public function validate_type_properties($arg1 = null, $arg2 = null)
     {
-        throw new Exception('Type validation method unavailable');
+        throw new Exception(__FUNCTION__ .  '() method unavailable');
     }
 }

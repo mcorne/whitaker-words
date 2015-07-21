@@ -1,6 +1,7 @@
 <?php
-require_once '../php/enumeration.php';
-require_once '../php/integer.php';
+set_include_path('../php');
+
+require_once 'integer.php';
 
 integer::new_type('which_type', 0, 9);
 integer::new_type('variant_type', 0, 9);
@@ -45,15 +46,18 @@ $h = positive::create(22);
 echo $h;
 echo "\n";
 
-
 $i = positive::constant(33);
 echo $i;
 echo "\n";
+echo $i->is_constant;
+echo "\n";
 // $i->value = 456;
 
-enumeration::new_type('day', ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
-$j = day::create('mon');
-echo $j;
+integer::new_type('bug_range', -13, 258);
+$j = bug_range::create(0);
+echo $j->first;
 echo "\n";
-
-exit;
+echo $j->last;
+echo "\n";
+echo $j->size;
+echo "\n";
