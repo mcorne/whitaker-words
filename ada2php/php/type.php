@@ -43,7 +43,7 @@ class type
             return $this->$name;
         }
 
-        throw new Exception("Undefined property: $name");
+        throw new Exception("Undefined property: $name.");
     }
 
     /**
@@ -55,11 +55,11 @@ class type
     public function __set($name, $value)
     {
         if ($name != 'value') {
-            throw new Exception("Invalid property: $name");
+            throw new Exception("Invalid property: $name.");
         }
 
         if ($this->is_constant) {
-            throw new Exception('Constant value may not be set');
+            throw new Exception('A constant value may not be set.');
         }
 
         if (is_null($value)) {
@@ -83,7 +83,7 @@ class type
             return (string) $this->data;
         }
 
-        throw new Exception("Cannot convert non scalar to string");
+        throw new Exception("Cannot convert a non scalar to a string.");
         // actually results in a fatal error
         // see http://php.net/manual/en/language.oop5.magic.php#object.tostring
     }
@@ -158,7 +158,7 @@ class type
      */
     public function create_type_class($type_name, $arg1 = null, $arg2 = null)
     {
-        throw new Exception(__FUNCTION__ .  '() method unavailable');
+        throw new Exception(__FUNCTION__ .  '() method unavailable.');
     }
 
     /**
@@ -171,7 +171,7 @@ class type
     public static function factory($type_name, $value)
     {
         if (! class_exists($type_name, false)) {
-            throw new Exception("Unavailable class: $type_name");
+            throw new Exception("Invalid class: $type_name.");
         }
 
         return new $type_name($value);
@@ -194,7 +194,7 @@ class type
     public static function load_type($type_name)
     {
         if (! isset(static::$custom_types[$type_name])) {
-            throw new Exception("Invalid custom type: $type_name");
+            throw new Exception("Invalid custom type: $type_name.");
         }
 
         $args = static::$custom_types[$type_name];
@@ -219,7 +219,7 @@ class type
         $class = $this->create_type_class($type_name, $arg1, $arg2);
 
         if (eval($class) === false) {
-            throw new Exception("Cannot eval type class: $type_name");
+            throw new Exception("Cannot eval the type class: $type_name.");
         }
     }
 
@@ -233,7 +233,7 @@ class type
     public static function new_type($type_name, $arg1 = null, $arg2 = null)
     {
         if (class_exists($type_name, false)) {
-            throw new Exception("Type already exists: $type_name");
+            throw new Exception("The type already exists: $type_name.");
         }
 
         $new_type = new static();
@@ -247,7 +247,7 @@ class type
      */
     public function set_value($value)
     {
-        throw new Exception(__FUNCTION__ .  '() method unavailable');
+        throw new Exception(__FUNCTION__ .  '() method unavailable.');
     }
 
     /**
@@ -268,6 +268,6 @@ class type
      */
     public function validate_type_properties($arg1 = null, $arg2 = null)
     {
-        throw new Exception(__FUNCTION__ .  '() method unavailable');
+        throw new Exception(__FUNCTION__ .  '() method unavailable.');
     }
 }

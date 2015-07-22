@@ -72,7 +72,7 @@ class integer extends type
         }
 
         if (! is_string($value) or ! preg_match('~^[+-]?([1-9][0-9]*|0)~', $value)) {
-            throw new Exception("Not an integer: $value");
+            throw new Exception("The value is not an integer: $value.");
         }
     }
 
@@ -84,11 +84,11 @@ class integer extends type
     public function is_value_in_range($value)
     {
         if (! is_null($this->first) and $value < $this->first) {
-            throw new Exception("Integer below range: $value < $this->first");
+            throw new Exception("The integer value is below the range: $value < $this->first.");
         }
 
         if (! is_null($this->last) and $value > $this->last) {
-            throw new Exception("Integer above range: $value > $this->last");
+            throw new Exception("The integer value is above the range: $value > $this->last.");
         }
     }
 
@@ -125,7 +125,7 @@ class integer extends type
         parent::validate($last);
 
         if (! is_null($first) and ! is_null($last) and $first > $last) {
-            throw new Exception("First boundary greater than last boundary: $first > $last");
+            throw new Exception("The first integer is greater than the second integer: $first > $last.");
         }
     }
 }

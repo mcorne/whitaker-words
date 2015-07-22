@@ -11,7 +11,7 @@ class common_io
     public static function close($handle)
     {
         if (! @fclose($handle)) {
-            throw new Exception('Cannot close file');
+            throw new Exception('Cannot close the file.');
         }
     }
 
@@ -19,14 +19,14 @@ class common_io
     {
         if ($filename) {
             if (! $handle = @fopen($filename, $mode)) {
-                throw new Exception("Cannot create file $filename");
+                throw new Exception("Cannot create the file $filename.");
             }
 
             self::$filenames[(int) $handle] = $filename;
 
         } else {
             if (! $handle = tmpfile()) {
-                throw new Exception('Cannot create temp file');
+                throw new Exception('Cannot create a temp file.');
             }
         }
     }
@@ -37,7 +37,7 @@ class common_io
         $filename = self::name($handle);
 
         if (! @unlink($filename)) {
-            throw new Exception("Cannot delete file $filename");
+            throw new Exception("Cannot delete the file $filename.");
         }
     }
 
@@ -51,7 +51,7 @@ class common_io
     public static function name($handle)
     {
         if (! isset(self::$filenames[(int) $handle])) {
-            throw new Exception('No such file');
+            throw new Exception('Invalid file handle.');
         }
 
         return self::$filenames[(int) $handle];
@@ -60,7 +60,7 @@ class common_io
     public static function open(&$handle, $mode , $filename)
     {
         if (! file_exists($filename)) {
-            throw new Exception("File does not exist $filename");
+            throw new Exception("The file does not exist: $filename.");
         }
 
         self::create($handle, $mode, $filename);
