@@ -65,22 +65,6 @@ class integer extends type
      * @param mixed $value
      * @throws Exception
      */
-    public function is_integer_value($value)
-    {
-        if (is_int($value)) {
-            return;
-        }
-
-        if (! is_string($value) or ! preg_match('~^[+-]?([1-9][0-9]*|0)~', $value)) {
-            throw new Exception("The value is not an integer: $value.");
-        }
-    }
-
-    /**
-     *
-     * @param mixed $value
-     * @throws Exception
-     */
     public function is_value_in_range($value)
     {
         if (! is_null($this->first) and $value < $this->first) {

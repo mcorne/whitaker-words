@@ -67,13 +67,7 @@ class type
             return;
         }
 
-        if (is_object($value) and $value instanceof type) {
-            // the value is a type object, sets the value to the type object value
-            // this allows to copy (clone) or cast a type object into another type object
-            $value = $value->value;
-        }
-
-        $this->validate($value);
+        $value = $this->get_value($value);
         $this->set_value($value);
     }
 
@@ -184,6 +178,40 @@ class type
         $temp_type_name = 'temp_type_' . $number++;
 
         return $temp_type_name;
+    }
+
+    /**
+     *
+     * @param mixed $value
+     */
+    public function get_value($value)
+    {
+        if (is_object($value) and $value instanceof type) {
+            // the value is a type object, sets the value to the type object value
+            // this allows to copy (clone) or cast a type object into another type object,
+            // or to pass a type object instead of its value
+            $value = $value->value;
+        }
+
+        $this->validate($value);
+
+        return $value;
+    }
+
+    /**
+     *
+     * @param mixed $value
+     * @throws Exception
+     */
+    public function is_integer_value($value)
+    {
+        if (is_int($value)) {
+            return;
+        }
+
+        if (! is_string($value) or ! preg_match('~^[+-]?([1-9][0-9]*|0)~', $value)) {
+            throw new Exception("The value is not an integer: $value.");
+        }
     }
 
     /**

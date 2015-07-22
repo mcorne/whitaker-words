@@ -4,13 +4,27 @@ set_include_path('../php');
 require_once 'enumeration.php';
 
 enumeration::new_type('day', ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
-$a = day::create('mon');
+$a = day::create('tue');
 echo $a;
+echo "\n";
+echo $a->pred($a);
+echo "\n";
+echo $a->pred('thu');
+echo "\n";
+echo $a->succ('sat');
 echo "\n";
 
 day::new_type('mid_week', 'tue', 'fri');
-$b = day::create('tue');
+$b = mid_week::create('tue');
 echo $b;
 echo "\n";
-
-exit;
+echo $b->first;
+echo "\n";
+echo $b->last;
+echo "\n";
+echo $b->pos($b);
+echo "\n";
+echo $b->pos('thu');
+echo "\n";
+echo $b->val(3);
+echo "\n";
