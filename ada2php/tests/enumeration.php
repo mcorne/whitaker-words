@@ -2,6 +2,7 @@
 set_include_path('../php');
 
 require_once 'enumeration.php';
+require_once 'boolean.php';
 
 enumeration::new_type('day', ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
 $a = day::create('tue');
@@ -27,4 +28,20 @@ echo "\n";
 echo $b->pos('thu');
 echo "\n";
 echo $b->val(3);
+echo "----\n";
+
+$c = boolean::create(true);
+echo $c;
+echo "\n";
+echo $c->first;
+echo "\n";
+echo $c->last;
+echo "\n";
+echo $c->pos($c);
+echo "\n";
+echo $c->pos(true);
+echo "\n";
+echo $c->val(1);
+echo "\n";
+echo $c->pred(true);
 echo "\n";

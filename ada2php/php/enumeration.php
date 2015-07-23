@@ -16,12 +16,14 @@ class enumeration extends type
     public function create_type_class($type_name, $arg1 = null, $arg2 = null)
     {
         if (get_class($this) == __CLASS__) {
+            // this is a new enumeration
             $values  = $arg1;
             $indexes = $this->indexes;
             $first   = current($values);
             $last    = end($values);
 
         } else {
+            // this is a subset of an existing enumeration
             $first = $arg1;
             $last  = $arg2;
             list($values, $indexes) = $this->extract_sub_range_values($arg1, $arg2);
@@ -69,12 +71,14 @@ class enumeration extends type
     public function is_valid_enumeration($values = null, $unused = null)
     {
         if (! is_array($values)) {
-            throw new Exception('The enumeration is not an array.');
+            $values = $this->convert_to_string($values);
+            throw new Exception("The enumeration is not an array: $values.");
         }
 
         foreach($values as $index => $value) {
             if (! is_string($value)) {
-                throw new Exception('The enumeration value is not a string.');
+                $value = $this->convert_to_string($value);
+                throw new Exception("The enumeration value is not a string: $value.");
             }
 
             if (isset($this->indexes[$value])) {
@@ -92,10 +96,9 @@ class enumeration extends type
      */
     public function is_valid_index($index)
     {
-        $this->is_integer_value($index);
-
-        if (! isset($this->values[$index])) {
-            throw new Exception("Invalid index: $index");
+        if (! is_int($index) or ! isset($this->values[$index])) {
+            $index = $this->convert_to_string($index);
+            throw new Exception("The index is invalid: $index");
         }
     }
 
@@ -106,31 +109,43 @@ class enumeration extends type
      */
     public function is_valid_sub_range($first = null, $last = null)
     {
-        if (! isset($this->indexes[$first])) {
-            throw new Exception("Invalid enumeration value: $first");
+        if (is_null($first) or ! isset($this->indexes[$first])) {
+            throw new Exception("The first enumeration value is invalid: $first");
         }
 
-        if (! isset($this->indexes[$last])) {
-            throw new Exception("Invalid enumeration value: $last");
+        if (is_null($last) or ! isset($this->indexes[$last])) {
+            throw new Exception("The last enumeration value is invalid: $last");
         }
 
         if ($this->indexes[$first] > $this->indexes[$last]) {
-            throw new Exception("The first value is greater than the second value: $first > $last.");
+            throw new Exception("The first enumeration value is greater than the second one: $first > $last.");
         }
     }
 
     /**
      *
-     * @param mixed $value
+     * @param string|enumeration $value
+     * @return type
+     */
+    public function pos($value)
+    {
+        $value = $this->filter_and_validate($value);
+
+        return $this->indexes[$value];
+    }
+
+    /**
+     *
+     * @param string|enumeration $value
      * @return string
      * @throws Exception
      */
     public function pred($value)
     {
-        $value = $this->get_value($value);
+        $value = $this->filter_and_validate($value);
 
         if ($value == $this->first) {
-            throw new Exception('The first value has no predecessor.');
+            throw new Exception('The first enumeration value has no predecessor.');
         }
 
         $pred_index = $this->indexes[$value] - 1;
@@ -140,19 +155,7 @@ class enumeration extends type
 
     /**
      *
-     * @param mixed $value
-     * @return type
-     */
-    public function pos($value)
-    {
-        $value = $this->get_value($value);
-
-        return $this->indexes[$value];
-    }
-
-    /**
-     *
-     * @param mixed $value
+     * @param mixed string
      */
     public function set_value($value)
     {
@@ -161,16 +164,16 @@ class enumeration extends type
 
     /**
      *
-     * @param mixed $value
+     * @param string|enumeration $value
      * @return mixed
      * @throws Exception
      */
     public function succ($value)
     {
-        $value = $this->get_value($value);
+        $value = $this->filter_and_validate($value);
 
         if ($value == $this->last) {
-            throw new Exception('The last value has no successor.');
+            throw new Exception('The last enumeration value has no successor.');
         }
 
         $pred_index = $this->indexes[$value] + 1;
@@ -192,27 +195,30 @@ class enumeration extends type
 
     /**
      *
-     * @param mixed $value
-     * @throws Exception
-     */
-    public function validate($value)
-    {
-        if (! is_null($value) and (! is_string($value) or ! isset($this->indexes[$value]))) {
-            throw new Exception('Invalid enumeration value.');
-        }
-    }
-
-    /**
-     *
      * @param array $values
      * @throws Exception
      */
     public function validate_type_properties($arg1 = null, $arg2 = null)
     {
         if (get_class($this) == __CLASS__) {
+            // this is a new enumeration
             $this->is_valid_enumeration($arg1, $arg2);
         } else {
+            // this is a subset of an existing enumeration
             $this->is_valid_sub_range($arg1, $arg2);
+        }
+    }
+
+    /**
+     *
+     * @param string $value
+     * @throws Exception
+     */
+    public function validate_value($value)
+    {
+        if (! is_string($value) or ! isset($this->indexes[$value])) {
+            $value = $this->convert_to_string($value);
+            throw new Exception("The enumeration value is invalid: $value.");
         }
     }
 }

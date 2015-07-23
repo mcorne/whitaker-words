@@ -9,7 +9,6 @@ class type
      * Stores the type value
      *
      * Note that $this->value is used to get or set the type value via a magic method.
-     * $value should never be set as a property, it is unset by security in the constructor.
      *
      * @var mixed
      */
@@ -17,16 +16,23 @@ class type
 
     public $is_constant = false;
 
-    // the property $value MUST NOT be added in children
-
     /**
      *
      * @param mixed $value
      */
     public function __construct($value = null)
     {
+        // the property $value is not meant to be set, it may only be accessed with magic methods
+        // unsets the value property if present
         unset($this->value);
-        $this->__set('value', $value);
+
+        if (is_null($value)) {
+            // there is no value, eg variable declaration, sets the value to null
+            $this->data = null;
+
+        } else {
+            $this->__set('value', $value);
+        }
     }
 
     /**
@@ -43,7 +49,7 @@ class type
             return $this->$name;
         }
 
-        throw new Exception("Undefined property: $name.");
+        throw new Exception("The property is undefined: $name.");
     }
 
     /**
@@ -55,31 +61,26 @@ class type
     public function __set($name, $value)
     {
         if ($name != 'value') {
-            throw new Exception("Invalid property: $name.");
+            throw new Exception("The property is invalid: $name.");
         }
 
         if ($this->is_constant) {
-            throw new Exception('A constant value may not be set.');
+            throw new Exception('A constant value may not be changed.');
         }
 
         if (is_null($value)) {
-            $this->data = null;
-            return;
+            throw new Exception('A null value may not be set.');
         }
 
-        $value = $this->get_value($value);
+        $value = $this->filter_and_validate($value);
         $this->set_value($value);
     }
 
     public function __toString()
     {
-        if (is_null($this->data) or is_scalar($this->data)) {
-            return (string) $this->data;
-        }
+        $string = $this->convert_to_string($this->data);
 
-        throw new Exception("Cannot convert a non scalar to a string.");
-        // actually results in a fatal error
-        // see http://php.net/manual/en/language.oop5.magic.php#object.tostring
+        return $string;
     }
 
     /**
@@ -94,6 +95,21 @@ class type
         return $constant;
     }
 
+
+    /**
+     *
+     * @param type $mixed
+     * @return string
+     */
+    public function convert_to_string($mixed)
+    {
+        $string = print_r($mixed, true);
+        // replaces extra spaces and line feeds with a single space
+        $string = preg_replace('~\s+~', ' ', $string);
+
+        return $string;
+    }
+
     /**
      *
      * @param mixed $value
@@ -104,9 +120,11 @@ class type
     public static function create($value = null, $arg1 = null, $arg2 = null)
     {
         if (func_num_args() > 1) {
+            // the value and the object type args are passed, instanciates a temporary type
             $type = self::create_temp_type($value, $arg1, $arg2);
 
         } else {
+            // the value only is passed, instanciates a new type
             $type = new static($value);
         }
 
@@ -152,7 +170,7 @@ class type
      */
     public function create_type_class($type_name, $arg1 = null, $arg2 = null)
     {
-        throw new Exception(__FUNCTION__ .  '() method unavailable.');
+        throw new Exception(__FUNCTION__ .  '() method is unavailable.');
     }
 
     /**
@@ -165,10 +183,28 @@ class type
     public static function factory($type_name, $value)
     {
         if (! class_exists($type_name, false)) {
-            throw new Exception("Invalid class: $type_name.");
+            throw new Exception("The class is invalid: $type_name.");
         }
 
         return new $type_name($value);
+    }
+
+    /**
+     *
+     * @param mixed $value
+     */
+    public function filter_and_validate($value)
+    {
+        if (is_object($value) and $value instanceof type) {
+            // the value is a type object, sets the value to the type object value
+            // this allows to copy (clone) or cast a type object into another type object,
+            // or to pass a type object instead of its value
+            $value = $value->value;
+        }
+
+        $this->validate_value($value);
+
+        return $value;
     }
 
     public function get_temp_type_name()
@@ -182,47 +218,13 @@ class type
 
     /**
      *
-     * @param mixed $value
-     */
-    public function get_value($value)
-    {
-        if (is_object($value) and $value instanceof type) {
-            // the value is a type object, sets the value to the type object value
-            // this allows to copy (clone) or cast a type object into another type object,
-            // or to pass a type object instead of its value
-            $value = $value->value;
-        }
-
-        $this->validate($value);
-
-        return $value;
-    }
-
-    /**
-     *
-     * @param mixed $value
-     * @throws Exception
-     */
-    public function is_integer_value($value)
-    {
-        if (is_int($value)) {
-            return;
-        }
-
-        if (! is_string($value) or ! preg_match('~^[+-]?([1-9][0-9]*|0)~', $value)) {
-            throw new Exception("The value is not an integer: $value.");
-        }
-    }
-
-    /**
-     *
      * @param string $type_name
      * @throws Exception
      */
     public static function load_type($type_name)
     {
         if (! isset(static::$custom_types[$type_name])) {
-            throw new Exception("Invalid custom type: $type_name.");
+            throw new Exception("The custom type is invalid: $type_name.");
         }
 
         $args = static::$custom_types[$type_name];
@@ -275,17 +277,7 @@ class type
      */
     public function set_value($value)
     {
-        throw new Exception(__FUNCTION__ .  '() method unavailable.');
-    }
-
-    /**
-     *
-     * @param mixed $value
-     * @return boolean
-     */
-    public function validate($value)
-    {
-        return true;
+        throw new Exception(__FUNCTION__ .  '() method is unavailable.');
     }
 
     /**
@@ -296,6 +288,16 @@ class type
      */
     public function validate_type_properties($arg1 = null, $arg2 = null)
     {
-        throw new Exception(__FUNCTION__ .  '() method unavailable.');
+        throw new Exception(__FUNCTION__ .  '() method is unavailable.');
+    }
+
+    /**
+     *
+     * @param mixed $value
+     * @return boolean
+     */
+    public function validate_value($value)
+    {
+        return true;
     }
 }

@@ -21,9 +21,7 @@ $e = which_sub_type::create(8);
 echo $e;
 echo "\n";
 
-$e->value = null;
-echo $e;
-echo "\n";
+// $e->value = null;
 
 $f = which_type::create($b);
 $f->value = 4;

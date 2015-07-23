@@ -65,6 +65,21 @@ class integer extends type
      * @param mixed $value
      * @throws Exception
      */
+    public function is_integer_value($value)
+    {
+        if (is_int($value) or is_string($value) and preg_match('~^[+-]?([1-9][0-9]*|0)~', $value)) {
+            return;
+        }
+
+        $value = $this->convert_to_string($value);
+        throw new Exception("The value is not an integer: $value");
+    }
+
+    /**
+     *
+     * @param int $value
+     * @throws Exception
+     */
     public function is_value_in_range($value)
     {
         if (! is_null($this->first) and $value < $this->first) {
@@ -78,24 +93,11 @@ class integer extends type
 
     /**
      *
-     * @param mixed $value
+     * @param int|string $value
      */
     public function set_value($value)
     {
         $this->data = (int) $value;
-    }
-
-    /**
-     *
-     * @param mixed $value
-     * @throws Exception
-     */
-    public function validate($value)
-    {
-        if (! is_null($value)) {
-            $this->is_integer_value($value);
-            $this->is_value_in_range($value);
-        }
     }
 
     /**
@@ -105,11 +107,27 @@ class integer extends type
      */
     public function validate_type_properties($first = null, $last = null)
     {
-        parent::validate($first);
-        parent::validate($last);
+        if (! is_null($first)) {
+            parent::validate_value($first);
+        }
+
+        if (! is_null($last)) {
+            parent::validate_value($last);
+        }
 
         if (! is_null($first) and ! is_null($last) and $first > $last) {
             throw new Exception("The first integer is greater than the second integer: $first > $last.");
         }
+    }
+
+    /**
+     *
+     * @param int $value
+     * @throws Exception
+     */
+    public function validate_value($value)
+    {
+        $this->is_integer_value($value);
+        $this->is_value_in_range($value);
     }
 }
