@@ -5,6 +5,7 @@ class integer extends type
 {
     protected $first = -2147483648; // 0x8000 0000, 32 bits
     protected $last  =  2147483647; // 0x7FFF FFFF, 32 bits
+    protected $size  = 32;
 
     /**
      *
@@ -44,9 +45,9 @@ class integer extends type
      */
     public function create_type_class($type_name, $first = null, $last = null)
     {
-        $last = is_null($last) ? 'null' : $last;
+        $last  = is_null($last)  ? 'null' : $last;
         $first = is_null($first) ? 'null' : $first;
-        $size = $this->calculate_size($first, $last);
+        $size  = $this->calculate_size($first, $last);
 
         $class = "
             class $type_name extends integer
@@ -62,17 +63,14 @@ class integer extends type
 
     /**
      *
-     * @param mixed $value
-     * @throws Exception
+     * @param int $value
+     * @return int
      */
-    public function is_integer_value($value)
+    public function filter_value($value)
     {
-        if (is_int($value) or is_string($value) and preg_match('~^[+-]?([1-9][0-9]*|0)~', $value)) {
-            return;
-        }
+        $value = $this->filter_numeric($value);
 
-        $value = $this->convert_to_string($value);
-        throw new Exception("The value is not an integer: $value");
+        return $value;
     }
 
     /**
@@ -80,15 +78,13 @@ class integer extends type
      * @param int $value
      * @throws Exception
      */
-    public function is_value_in_range($value)
+    public function is_integer_value($value)
     {
-        if (! is_null($this->first) and $value < $this->first) {
-            throw new Exception("The integer value is below the range: $value < $this->first.");
+        if (! is_numeric($value) or $value != (int) (float) $value) {
+            $value = $this->convert_to_string($value);
+            throw new Exception("The value is not an integer: $value");
         }
 
-        if (! is_null($this->last) and $value > $this->last) {
-            throw new Exception("The integer value is above the range: $value > $this->last.");
-        }
     }
 
     /**
@@ -97,7 +93,7 @@ class integer extends type
      */
     public function set_value($value)
     {
-        $this->data = (int) $value;
+        $this->data = (int) (float) $value;
     }
 
     /**
@@ -116,7 +112,7 @@ class integer extends type
         }
 
         if (! is_null($first) and ! is_null($last) and $first > $last) {
-            throw new Exception("The first integer is greater than the second integer: $first > $last.");
+            throw new Exception("The first value is greater than the second one: $first > $last.");
         }
     }
 

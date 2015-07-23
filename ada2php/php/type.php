@@ -202,7 +202,33 @@ class type
             $value = $value->value;
         }
 
+        $value = $this->filter_value($value);
         $this->validate_value($value);
+
+        return $value;
+    }
+
+    /**
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    public function filter_value($value)
+    {
+        return $value;
+    }
+
+    /**
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    public function filter_numeric($value)
+    {
+        if (is_string($value)) {
+            // removes unserscores from a numeric that is used as a digit separator in ADA
+            $value = str_replace('_', '', $value);
+        }
 
         return $value;
     }
@@ -214,6 +240,22 @@ class type
         $temp_type_name = 'temp_type_' . $number++;
 
         return $temp_type_name;
+    }
+
+    /**
+     *
+     * @param int $value
+     * @throws Exception
+     */
+    public function is_value_in_range($value)
+    {
+        if (! is_null($this->first) and $value < $this->first) {
+            throw new Exception("The value is below the range: $value < $this->first.");
+        }
+
+        if (! is_null($this->last) and $value > $this->last) {
+            throw new Exception("The value is above the range: $value > $this->last.");
+        }
     }
 
     /**

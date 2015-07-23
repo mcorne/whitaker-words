@@ -44,7 +44,7 @@ $h = positive::create(22);
 echo $h;
 echo "\n";
 
-$i = positive::constant(33);
+$i = positive::constant('3_322');
 echo $i;
 echo "\n";
 echo $i->is_constant;

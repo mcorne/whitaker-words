@@ -107,7 +107,7 @@ class enumeration extends type
      * @param string $first
      * @param string $last
      */
-    public function is_valid_sub_range($first = null, $last = null)
+    public function is_valid_range($first = null, $last = null)
     {
         if (is_null($first) or ! isset($this->indexes[$first])) {
             throw new Exception("The first enumeration value is invalid: $first");
@@ -205,7 +205,7 @@ class enumeration extends type
             $this->is_valid_enumeration($arg1, $arg2);
         } else {
             // this is a subset of an existing enumeration
-            $this->is_valid_sub_range($arg1, $arg2);
+            $this->is_valid_range($arg1, $arg2);
         }
     }
 
