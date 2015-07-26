@@ -89,7 +89,7 @@ class integer extends type
 
     /**
      *
-     * @param int|string $value
+     * @param int $value
      */
     public function set_value($value)
     {

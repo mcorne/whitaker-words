@@ -58,7 +58,7 @@ class float extends type
 
     /**
      *
-     * @param float|string $value
+     * @param float $value
      */
     public function set_value($value)
     {

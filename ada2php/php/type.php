@@ -114,14 +114,14 @@ class type
      *
      * @param mixed $value
      * @param mixed $arg1
-     * @param mixed $arg2
+     * @param mixed $arg2 etc.
      * @return object
      */
-    public static function create($value = null, $arg1 = null, $arg2 = null)
+    public static function create($value = null)
     {
         if (func_num_args() > 1) {
             // the value and the object type args are passed, instanciates a temporary type
-            $type = self::create_temp_type($value, $arg1, $arg2);
+            $type = call_user_func_array('static::create_temp_type', func_get_args());
 
         } else {
             // the value only is passed, instanciates a new type
@@ -135,14 +135,21 @@ class type
      *
      * @param mixed $value
      * @param mixed $arg1
-     * @param mixed $arg2
+     * @param mixed $arg2 etc
      * @return object
      */
-    public static function create_temp_type($value = null, $arg1 = null, $arg2 = null)
+    public static function create_temp_type($value = null)
     {
         $type = new static();
         $temp_type_name = $type->get_temp_type_name();
-        $type->create_type($temp_type_name, $arg1, $arg2);
+
+        if ($args = func_get_args()) {
+            $args[0] = $temp_type_name;
+        } else {
+            $args = [$temp_type_name];
+        }
+
+        call_user_func_array([$type, 'create_type'], $args);
         $temp_type = new $temp_type_name($value);
 
         return $temp_type;
@@ -152,23 +159,26 @@ class type
      *
      * @param string $type_name
      * @param mixed $arg1
-     * @param mixed $arg2
+     * @param mixed $arg2 etc
      * @throws Exception
      */
-    public function create_type($type_name, $arg1 = null, $arg2 = null)
+    public function create_type($type_name)
     {
-        $this->validate_type_properties($arg1, $arg2);
-        $this->load_type_class($type_name, $arg1, $arg2);
+        $args = func_get_args();
+        array_shift($args);
+        call_user_func_array([$this, 'validate_type_properties'], $args);
+
+        call_user_func_array([$this, 'load_type_class'], func_get_args());
     }
 
     /**
      *
      * @param string $type_name
      * @param mixed $arg1
-     * @param mixed $arg2
+     * @param mixed $arg2 etc
      * @throws Exception
      */
-    public function create_type_class($type_name, $arg1 = null, $arg2 = null)
+    public function create_type_class($type_name)
     {
         throw new Exception(__FUNCTION__ .  '() method is unavailable.');
     }
@@ -283,12 +293,12 @@ class type
      *
      * @param string $type_name
      * @param mixed $arg1
-     * @param mixed $arg2
+     * @param mixed $arg2 etc
      * @throws Exception
      */
-    public function load_type_class($type_name, $arg1 = null, $arg2 = null)
+    public function load_type_class($type_name)
     {
-        $class = $this->create_type_class($type_name, $arg1, $arg2);
+        $class = call_user_func_array([$this, 'create_type_class'], func_get_args());
 
         if (eval($class) === false) {
             throw new Exception("Cannot eval the type class: $type_name.");
@@ -299,17 +309,17 @@ class type
      *
      * @param string $type_name
      * @param mixed $arg1
-     * @param mixed $arg2
+     * @param mixed $arg2 etc.
      * @throws Exception
      */
-    public static function new_type($type_name, $arg1 = null, $arg2 = null)
+    public static function new_type($type_name)
     {
         if (class_exists($type_name, false)) {
             throw new Exception("The type already exists: $type_name.");
         }
 
         $new_type = new static();
-        $new_type->create_type($type_name, $arg1, $arg2);
+        call_user_func_array([$new_type, 'create_type'], func_get_args());
     }
 
     /**
@@ -325,10 +335,10 @@ class type
     /**
      *
      * @param mixed $arg1
-     * @param mixed $arg2
+     * @param mixed $arg2 etc
      * @throws Exception
      */
-    public function validate_type_properties($arg1 = null, $arg2 = null)
+    public function validate_type_properties()
     {
         throw new Exception(__FUNCTION__ .  '() method is unavailable.');
     }

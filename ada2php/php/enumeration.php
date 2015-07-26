@@ -195,8 +195,8 @@ class enumeration extends type
 
     /**
      *
-     * @param array $values
-     * @throws Exception
+     * @param mixed $arg1
+     * @param mixed $arg2
      */
     public function validate_type_properties($arg1 = null, $arg2 = null)
     {
