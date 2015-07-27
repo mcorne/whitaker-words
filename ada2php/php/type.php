@@ -4,6 +4,7 @@ type::$custom_types = require 'custom_types.php';
 class type
 {
     public static $custom_types;
+    public static $temp_type_names;
 
     /**
      * Stores the type value
@@ -60,7 +61,7 @@ class type
      */
     public function __set($name, $value)
     {
-        if ($name != 'value') {
+        if ($name != 'value' and $name != 'v') {
             throw new Exception("The property is invalid: $name.");
         }
 
@@ -141,18 +142,45 @@ class type
     public static function create_temp_type($value = null)
     {
         $type = new static();
-        $temp_type_name = $type->get_temp_type_name();
 
         if ($args = func_get_args()) {
-            $args[0] = $temp_type_name;
+            $args[0] = get_called_class();
         } else {
-            $args = [$temp_type_name];
+            $args = [get_called_class()];
         }
 
-        call_user_func_array([$type, 'create_type'], $args);
+        if (! $temp_type_name = $type->get_temp_type_name($args)) {
+            $temp_type_name = $type->create_temp_type_name($args);
+
+            if ($args = func_get_args()) {
+                $args[0] = $temp_type_name;
+            } else {
+                $args = [$temp_type_name];
+            }
+
+            call_user_func_array([$type, 'create_type'], $args);
+        }
+
         $temp_type = new $temp_type_name($value);
 
         return $temp_type;
+    }
+
+    /**
+     *
+     * @staticvar int $number
+     * @param array $args
+     * @return string
+     */
+    public function create_temp_type_name($args)
+    {
+        static $number = 0;
+
+        $key = $this->get_temp_type_key($args);
+        $temp_type_name = 'temp_type_' . $number++;
+        static::$temp_type_names[$key] = $temp_type_name;
+
+        return $temp_type_name;
     }
 
     /**
@@ -243,13 +271,32 @@ class type
         return $value;
     }
 
-    public function get_temp_type_name()
+    /**
+     *
+     * @param array $args
+     * @return string
+     */
+    public function get_temp_type_name($args)
     {
-        static $number = 0;
+        $key = $this->get_temp_type_key($args);
 
-        $temp_type_name = 'temp_type_' . $number++;
+        if (isset(static::$temp_type_names[$key])) {
+            return static::$temp_type_names[$key];
+        }
 
-        return $temp_type_name;
+        return null;
+    }
+
+    /**
+     *
+     * @param array $args
+     * @return string
+     */
+    public function get_temp_type_key($args)
+    {
+        $key = print_r($args, true);
+
+        return $key;
     }
 
     /**
@@ -271,24 +318,34 @@ class type
     /**
      *
      * @param string $type_name
-     * @throws Exception
      */
-    public static function load_type($type_name)
+    public function load_custom_type($type_name)
     {
-        if (! isset(static::$custom_types[$type_name])) {
-            throw new Exception("The custom type is invalid: $type_name.");
-        }
-
         $args = static::$custom_types[$type_name];
         $parent_type_name = $args[0];
 
-        if (! class_exists($parent_type_name)) {
-            self::create_custom_type($parent_type_name);
+        if (! class_exists($parent_type_name, false)) {
+            $this->load_custom_type($parent_type_name);
         }
 
         $args[0] = $type_name;
         call_user_func_array("$parent_type_name::new_type", $args);
     }
+
+    /**
+     *
+     * @param string $type_name
+     * @throws Exception
+     */
+    public static function load_type($type_name)
+    {
+        $type = new self();
+
+        if (! $type->type_exists($type_name)) {
+            throw new Exception("The type is invalid: $type_name.");
+        }
+    }
+
     /**
      *
      * @param string $type_name
@@ -307,6 +364,35 @@ class type
 
     /**
      *
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
+    public function new_temp_type($args)
+    {
+        if (empty($args[0]) or ! is_string($args[0])) {
+            throw new Exception('The parent type name is invalid');
+        }
+
+        $parent_type_name = $args[0];
+
+        if (! $temp_type_name = $this->get_temp_type_name($args)) {
+            $temp_type_name = $this->create_temp_type_name($args);
+
+            if ($args = func_get_args()) {
+                $args[0] = $temp_type_name;
+            } else {
+                $args = [$temp_type_name];
+            }
+
+            call_user_func_array("$parent_type_name::create_type", $args);
+        }
+
+        return $temp_type_name;
+    }
+
+    /**
+     *
      * @param string $type_name
      * @param mixed $arg1
      * @param mixed $arg2 etc.
@@ -314,6 +400,10 @@ class type
      */
     public static function new_type($type_name)
     {
+        if (! preg_match('~^[a-z_]\w*$~i', $type_name)) {
+            throw new Exception("The type (class) name is invalid: $type_name.");
+        }
+
         if (class_exists($type_name, false)) {
             throw new Exception("The type already exists: $type_name.");
         }
@@ -330,6 +420,36 @@ class type
     public function set_value($value)
     {
         throw new Exception(__FUNCTION__ .  '() method is unavailable.');
+    }
+
+    /**
+     *
+     * @param type $type_name
+     * @return boolean
+     */
+    public function type_exists($type_name)
+    {
+        if (! is_string($type_name)) {
+            return false;
+        }
+
+        if (class_exists($type_name, false)) {
+            return true;
+        }
+
+        if (isset(static::$custom_types[$type_name])) {
+            $this->load_custom_type($type_name);
+            return true;
+        }
+
+        $filename = __DIR__ . "/$type_name.php";
+
+        if (file_exists($filename)) {
+            require_once $filename;
+            return true;
+        }
+
+        return false;
     }
 
     /**

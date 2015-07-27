@@ -29,7 +29,7 @@ echo $f;
 echo "\n";
 echo $b;
 echo "\n";
-$f->value = $a;
+$f->v = $a;
 echo $f;
 echo "\n";
 

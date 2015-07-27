@@ -1,51 +1,62 @@
 <?php
 require_once 'type.php';
 
-class arrays extends type implements ArrayAccess
+class arrays extends type
 {
-    protected $add_keys;
-    protected $dimension;
-    protected $keys;
-    protected $type;
+    protected $key_type_names;
+    protected $value_type_name;
 
-    public function offsetExists($key)
+    public function get_key_or_value_type()
     {
-        return isset($this->data[$key]);
-    }
-
-    public function offsetGet($key) {
-        return $this->data[$key];
-    }
-
-    public function offsetSet($key, $value)
-    {
-        if (is_array($value)) {
-            $value = new self($value, $this->add_keys, $this->level + 1);
-        }
-
-        if (is_null($key)) {
-            $this->data[] = $value;
+        if ($this->type_exists($value_type_args)) {
+            $this->value_type_name = $value_type_args;
         } else {
-            $this->data[$key] = $value;
+            $value_type_args = $this->parse_type_args($value_type_args);
+            $this->value_type_name = $this->new_temp_type($value_type_args);
         }
+
     }
 
-    public function offsetUnset($key)
+    public function parse_type_args($args)
     {
-        unset($this->data[$key]);
+        if(is_string($args)) {
+            $args = [$args];
+
+        } elseif (! is_array($args)) {
+            $args = $this->convert_to_string($args);
+            throw new Exception("The enumeration args are invalid: $args");
+
+        } elseif (! is_string($args[0])) {
+            array_unshift($args, 'integer');
+        }
+
+        return $args;
     }
 
-    public function set_value($array, $add_keys = false, $dimension = 0)
+    public function validate_type_properties($value_type_args)
     {
-        $this->add_keys  = $add_keys;
-        $this->dimension = $dimension;
+        if ($this->type_exists($value_type_args)) {
+            $this->value_type_name = $value_type_args;
+        } else {
+            $value_type_args = $this->parse_type_args($value_type_args);
+            $this->value_type_name = $this->new_temp_type($value_type_args);
+        }
 
-        foreach ($array as $key => $value) {
-            if ($add_keys) {
-                $key = $this->keys[$dimension][$key];
+        $key_types_args = func_get_args();
+        array_shift($key_types_args);
+
+        if (! $key_types_args) {
+            $this->value_type_name[] = self::new_temp_type(['integer']);
+
+        } else {
+            foreach($key_types_args as $key_type_args) {
+                if (!$this->type_exists($value_type_args)) {
+                    $value_type_args = $this->parse_type_args($value_type_args);
+                    $this->value_type_name = self::new_temp_type($value_type_args);
+                }
+
+                $this->value_type_name[] = self::new_temp_type($key_type_args);
             }
-
-            $this->offsetSet($key, $value);
         }
     }
 }
