@@ -188,6 +188,7 @@ class type
      * @param string $type_name
      * @param mixed $arg1
      * @param mixed $arg2 etc
+     * @return string
      * @throws Exception
      */
     public function create_type($type_name)
@@ -196,7 +197,9 @@ class type
         array_shift($args);
         call_user_func_array([$this, 'validate_type_properties'], $args);
 
-        call_user_func_array([$this, 'load_type_class'], func_get_args());
+        $class = call_user_func_array([$this, 'load_type_class'], func_get_args());
+
+        return $class;
     }
 
     /**
@@ -360,6 +363,8 @@ class type
         if (eval($class) === false) {
             throw new Exception("Cannot eval the type class: $type_name.");
         }
+
+        return $class;
     }
 
     /**
@@ -396,6 +401,7 @@ class type
      * @param string $type_name
      * @param mixed $arg1
      * @param mixed $arg2 etc.
+     * @return string
      * @throws Exception
      */
     public static function new_type($type_name)
@@ -409,7 +415,9 @@ class type
         }
 
         $new_type = new static();
-        call_user_func_array([$new_type, 'create_type'], func_get_args());
+        $class = call_user_func_array([$new_type, 'create_type'], func_get_args());
+
+        return $class;
     }
 
     /**

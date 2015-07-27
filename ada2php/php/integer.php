@@ -15,8 +15,13 @@ class integer extends type
      */
     public function calculate_size($first, $last)
     {
-        $greatest_boundary = max(abs($first), abs($last));
-        $size = $this->count_significant_bits($greatest_boundary);
+        if (is_null($first) or is_null($last)) {
+            $size = $this->size;
+
+        } else {
+            $greatest_boundary = max(abs($first), abs($last));
+            $size = $this->count_significant_bits($greatest_boundary);
+        }
 
         return $size;
     }
@@ -45,15 +50,15 @@ class integer extends type
      */
     public function create_type_class($type_name, $first = null, $last = null)
     {
-        $last  = is_null($last)  ? 'null' : $last;
-        $first = is_null($first) ? 'null' : $first;
+        $exported_last  = is_null($last)  ? 'null' : $last;
+        $exported_first = is_null($first) ? 'null' : $first;
         $size  = $this->calculate_size($first, $last);
 
         $class = "
             class $type_name extends integer
             {
-                protected \$first = $first;
-                protected \$last  = $last;
+                protected \$first = $exported_first;
+                protected \$last  = $exported_last;
                 protected \$size  = $size;
             }
             ";
