@@ -19,10 +19,10 @@ class arrays extends type
 
     public function create_array_types()
     {
-        $this->value_type = $this->create_temp_type($this->value_type_args);
+        $this->value_type = $this->create_new_temp_type($this->value_type_args);
 
         foreach ($this->key_type_args as $key_type_args) {
-            $this->key_types[] = $this->create_temp_type($key_type_args);
+            $this->key_types[] = $this->create_new_temp_type($key_type_args);
         }
     }
 

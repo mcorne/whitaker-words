@@ -121,7 +121,7 @@ class type
     {
         if (func_num_args() > 1) {
             // the value and the object type args are passed, instanciates a temporary type
-            $type = call_user_func_array([new static(), 'create_temp'], func_get_args());
+            $type = static::create_temp(func_get_args());
 
         } else {
             // the value only is passed, instanciates a new type
@@ -134,22 +134,14 @@ class type
     /**
      *
      * @param mixed $value
-     * @param mixed $arg1
-     * @param mixed $arg2 etc
+     * @param array $type_args
      * @return object
      */
-    public function create_temp($value = null)
+    public static function create_temp($type_args)
     {
-        $temp_type_name = $this->create_temp_type_name();
-
-        if ($type_args = func_get_args()) {
-            $type_args[0] = $temp_type_name;
-        } else {
-            $type_args = [$temp_type_name];
-        }
-
-        call_user_func_array([$this, 'create_type'], $type_args);
-
+        $value = array_shift($type_args);
+        $parent_type = new static();
+        $temp_type_name = $parent_type->create_temp_type($type_args);
         $temp_type = new $temp_type_name($value);
 
         return $temp_type;
@@ -159,25 +151,29 @@ class type
      *
      * @param array $type_args
      * @return string
-     * @throws Exception
      */
     public function create_temp_type($type_args)
     {
-        if (empty($type_args[0]) or ! is_string($type_args[0])) {
-            throw new Exception('The parent type name is invalid');
-        }
+        $temp_type_name = $this->create_temp_type_name();
+        $this->create_type($temp_type_name, $type_args);
 
-        $parent_type_name = $type_args[0];
-        $temp_type_name   = $this->create_temp_type_name();
+        return $temp_type_name;
+    }
 
-        if ($type_args) {
-            $type_args[0] = $temp_type_name;
-        } else {
-            $type_args = [$temp_type_name];
-        }
-
+    /**
+     *
+     * @param array $type_args
+     * @return string
+     * @throws Exception
+     */
+    public function create_new_temp_type($type_args)
+    {
+        $parent_type_name = array_shift($type_args);
         $this->load_type_dyn($parent_type_name);
-        call_user_func_array([new $parent_type_name(), 'create_type'], $type_args);
+        $parent_type = new $parent_type_name();
+
+        $temp_type_name = $this->create_temp_type_name();
+        $parent_type->create_type($temp_type_name, $type_args);
 
         $temp_type = new $temp_type_name();
 
@@ -200,20 +196,17 @@ class type
     /**
      *
      * @param string $type_name
-     * @param mixed $arg1
-     * @param mixed $arg2 etc
+     * @param array $type_args
      * @return string
-     * @throws Exception
      */
-    public function create_type($type_name)
+    public function create_type($type_name, $type_args)
     {
-        $type_args = func_get_args();
-        array_shift($type_args);
         call_user_func_array([$this, 'validate_type_properties'], $type_args);
 
-        $class = call_user_func_array([$this, 'load_type_class'], func_get_args());
+        array_unshift($type_args, $type_name);
+        $type_class = call_user_func_array([$this, 'load_type_class'], $type_args);
 
-        return $class;
+        return $type_class;
     }
 
     /**
@@ -297,7 +290,7 @@ class type
         $type_args = static::$custom_types[$type_name];
 
         $parent_type_name = $type_args[0];
-        self::load_type($parent_type_name);
+        $this->load_type_dyn($parent_type_name);
 
         $type_args[0] = $type_name;
         call_user_func_array("$parent_type_name::new_type", $type_args);
@@ -335,13 +328,13 @@ class type
      */
     public function load_type_class($type_name)
     {
-        $class = call_user_func_array([$this, 'create_type_class'], func_get_args());
+        $type_class = call_user_func_array([$this, 'create_type_class'], func_get_args());
 
-        if (eval($class) === false) {
+        if (eval($type_class) === false) {
             throw new Exception("Cannot eval the type class: $type_name.");
         }
 
-        return $class;
+        return $type_class;
     }
 
     /**
@@ -354,7 +347,10 @@ class type
      */
     public static function new_type($type_name)
     {
-        if (! preg_match('~^[a-z_]\w*$~i', $type_name)) {
+        $parent_type = new static();
+
+        if (! is_string($type_name) or ! preg_match('~^[a-z_]\w*$~i', $type_name)) {
+            $type_name = $parent_type->convert_to_string($type_name);
             throw new Exception("The type (class) name is invalid: $type_name.");
         }
 
@@ -362,10 +358,11 @@ class type
             throw new Exception("The type already exists: $type_name.");
         }
 
-        $new_type = new static();
-        $class = call_user_func_array([$new_type, 'create_type'], func_get_args());
+        $type_args = func_get_args();
+        array_shift($type_args);
+        $type_class = $parent_type->create_type($type_name, $type_args);
 
-        return $class;
+        return $type_class;
     }
 
     /**
