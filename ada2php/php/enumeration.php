@@ -75,7 +75,7 @@ class enumeration extends type
             throw new Exception("The enumeration is not an array: $values.");
         }
 
-        foreach($values as $index => $value) {
+        foreach ($values as $index => $value) {
             if (! is_string($value)) {
                 $value = $this->convert_to_string($value);
                 throw new Exception("The enumeration value is not a string: $value.");

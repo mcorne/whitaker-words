@@ -17,11 +17,12 @@ type::load_type('integer');
 $class = integer::new_type('new_int');
 $class = arrays::new_type('new_array7', 'new_int');
 
+$a = new_array::create();
+// $a->key(1, 2)->value = 123;
+
 exit;
 //
 
-
-$a = arrays::create();
 
 $a = arrays::create([1, 2, 3, 4, 5])    ; // to be mapped to the keys
 $a = arrays::create([0 => 1, 1 => 2, 2 => 3, 3 => 4, 4 => 5], false); // keys and values
@@ -35,5 +36,4 @@ $a = arrays::create($array);
 
 
 
-$a->key(1, 2)->value = 123;
 $a->k(1, 2)->v = 123;

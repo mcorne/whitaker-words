@@ -3,8 +3,28 @@ require_once 'type.php';
 
 class arrays extends type
 {
+    protected $key_types;
     protected $key_type_args;
+    protected $value_type;
     protected $value_type_args;
+
+    public function __construct($value = null)
+    {
+        if (get_class($this) != __CLASS__) {
+            $this->create_array_types();
+        }
+
+        parent::__construct($value);
+    }
+
+    public function create_array_types()
+    {
+        $this->value_type = $this->create_temp_type($this->value_type_args);
+
+        foreach ($this->key_type_args as $key_type_args) {
+            $this->key_types[] = $this->create_temp_type($key_type_args);
+        }
+    }
 
     /**
      *
@@ -26,18 +46,6 @@ class arrays extends type
         return $class;
     }
 
-    public function get_type_name($type_args) // TODO: remove if unused
-    {
-        if ($this->type_exists($type_args)) {
-            $type_name = $type_args;
-        } else {
-            $type_args = $this->parse_type_args($type_args);
-            $type_name = $this->new_temp_type($type_args);
-        }
-
-        return $type_name;
-    }
-
     /**
      *
      * @param array $key_types_args
@@ -50,7 +58,7 @@ class arrays extends type
             return $key_type_args;
         }
 
-        foreach($key_types_args as &$key_type_args) {
+        foreach ($key_types_args as &$key_type_args) {
             $key_type_args = $this->parse_type_args($key_type_args);
         }
 
@@ -82,21 +90,6 @@ class arrays extends type
     /**
      *
      * @param mixed $value_type_args
-     * @param mixed $key_type_args_1
-     * @param mixed $key_type_args_2 etc.
-     */
-    public function validate_type_properties($value_type_args = null)
-    {
-        $this->value_type_args = $this->parse_value_type_args($value_type_args);
-
-        $key_types_args = func_get_args();
-        array_shift($key_types_args);
-        $this->key_type_args = $this->parse_key_type_args($key_types_args);
-    }
-
-    /**
-     *
-     * @param mixed $value_type_args
      * @return array
      */
     public function parse_value_type_args($value_type_args)
@@ -108,5 +101,20 @@ class arrays extends type
         }
 
         return $value_type_args;
+    }
+
+    /**
+     *
+     * @param mixed $value_type_args
+     * @param mixed $key_type_args_1
+     * @param mixed $key_type_args_2 etc.
+     */
+    public function validate_type_properties($value_type_args = null)
+    {
+        $this->value_type_args = $this->parse_value_type_args($value_type_args);
+
+        $key_types_args = func_get_args();
+        array_shift($key_types_args);
+        $this->key_type_args = $this->parse_key_type_args($key_types_args);
     }
 }
