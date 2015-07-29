@@ -39,10 +39,11 @@ class arrays extends type
     {
         if ($name == 'value' and $this->is_key_set) {
             $this->is_key_set = false;
-            $value = $this->current_value;
 
-            if (is_null($value)) {
-                $value = $this->get_default_value();
+            if (is_null($value = $this->current_value) and
+                is_null($value = $this->get_default_value($this->data)))
+            {
+                throw new Exception('The array value has no default value');
             }
 
             return $value;
@@ -145,44 +146,44 @@ class arrays extends type
 
     /**
      *
+     * @param array $data
+     * @param int $key_index
      * @return mixed
-     * @throws Exception
      */
-    public function get_default_value($key_index = 0, $data = null)
+    public function get_default_value($data, $key_index = 0)
     {
-        if ($key_index == 0) {
-            $data = $this->data;
-        }
-
         $key = $this->key_types[$key_index]->value;
 
-        if ($key_index == $this->last_key_index) {
-            if (isset($data[$key])) {
-                $value = $data[$key];
-
-            } elseif (isset($data[self::OTHERS])) {
-                $value = $data[self::OTHERS];
-
-            } else {
-                $value = null;
-            }
-
-        } else {
+        if ($key_index != $this->last_key_index) {
             $key_index++;
 
             if (isset($data[$key])) {
-                $value = $this->get_default_value($key_index, $data[$key]);
+                $value = $this->get_default_value($data[$key], $key_index);
 
-            } elseif (isset($data[self::OTHERS])) {
-                $value = $this->get_default_value($key_index, $data[self::OTHERS]);
-
-            } else {
-                $value = null;
+                if (! is_null($value)) {
+                    return $value;
+                }
             }
+
+            if (isset($data[self::OTHERS])) {
+                $value = $this->get_default_value($data[self::OTHERS], $key_index);
+
+                if (! is_null($value)) {
+                    return $value;
+                }
+            }
+
+            return null;
         }
 
-        if ($key_index == 0 and is_null($value)) {
-            throw new Exception('The array value has no default value');
+        if (isset($data[$key])) {
+            $value = $data[$key];
+
+        } elseif (isset($data[self::OTHERS])) {
+            $value = $data[self::OTHERS];
+
+        } else {
+            $value = null;
         }
 
         return $value;

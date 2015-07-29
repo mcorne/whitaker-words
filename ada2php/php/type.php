@@ -61,7 +61,7 @@ class type
      */
     public function __set($name, $value)
     {
-        if ($name != 'value' and $name != 'v') {
+        if ($name != 'value') {
             throw new Exception("The property is invalid: $name.");
         }
 

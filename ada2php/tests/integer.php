@@ -59,3 +59,5 @@ echo $j->last;
 echo "\n";
 echo $j->size;
 echo "\n";
+
+// TODO: handle: type Byte        is mod 256; -- an unsigned byte

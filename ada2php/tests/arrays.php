@@ -48,6 +48,8 @@ echo $b->key(2, 5)->value;
 echo "\n";
 echo $b->key(3, 5)->value;
 echo "\n";
+echo $b->key(3, 6)->value;
+echo "\n";
 
 exit;
 
@@ -75,4 +77,4 @@ $array = [
 ];
 $a = arrays::create($array);
 
-// TODO: handle others, add keys
+// TODO: add keys
