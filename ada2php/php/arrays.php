@@ -148,25 +148,44 @@ class arrays extends type
      * @return mixed
      * @throws Exception
      */
-    public function get_default_value()
+    public function get_default_value($key_index = 0, $data = null)
     {
-        $data = $this->data;
+        if ($key_index == 0) {
+            $data = $this->data;
+        }
 
-        foreach ($this->key_types as $index => $key_type) {
-            $key = $key_type->value;
+        $key = $this->key_types[$key_index]->value;
 
-            if (isset($data[$key]) and ($index == $this->last_key_index or ! empty($data[$key]))) {
-                $data = $data[$key];
+        if ($key_index == $this->last_key_index) {
+            if (isset($data[$key])) {
+                $value = $data[$key];
 
             } elseif (isset($data[self::OTHERS])) {
-                $data = $data[self::OTHERS];
+                $value = $data[self::OTHERS];
 
             } else {
-                throw new Exception('The array value has no default value');
+                $value = null;
+            }
+
+        } else {
+            $key_index++;
+
+            if (isset($data[$key])) {
+                $value = $this->get_default_value($key_index, $data[$key]);
+
+            } elseif (isset($data[self::OTHERS])) {
+                $value = $this->get_default_value($key_index, $data[self::OTHERS]);
+
+            } else {
+                $value = null;
             }
         }
 
-        return $data;
+        if ($key_index == 0 and is_null($value)) {
+            throw new Exception('The array value has no default value');
+        }
+
+        return $value;
     }
 
     /**
@@ -186,12 +205,12 @@ class arrays extends type
 
         $this->current_value = &$this->data;
 
-        foreach ($this->key_types as $index => $key_type) {
-            $key_type->value = func_get_arg($index);
+        foreach ($this->key_types as $key_index => $key_type) {
+            $key_type->value = func_get_arg($key_index);
             $key = $key_type->value;
 
             if (! isset($this->current_value[$key])) {
-                if ($index != $this->last_key_index) {
+                if ($key_index != $this->last_key_index) {
                     $this->current_value[$key] = [];
                 } else {
                     $this->current_value[$key] = null;
