@@ -3,11 +3,15 @@ require_once 'type.php';
 
 class arrays extends type
 {
+    const OTHERS = '__OTHERS__';
+
     protected $current_value;
     protected $data = [];
-    protected $key_types_count;
-    protected $key_types;
+    protected $is_key_set = false;
     protected $key_type_args;
+    protected $key_types;
+    protected $key_types_count;
+    protected $last_key_index;
     protected $value_type;
     protected $value_type_args;
 
@@ -23,6 +27,28 @@ class arrays extends type
         }
 
         parent::__construct($value);
+    }
+
+    /**
+     *
+     * @param string $name
+     * @return mixed
+     * @throws Exception
+     */
+    public function __get($name)
+    {
+        if ($name == 'value' and $this->is_key_set) {
+            $this->is_key_set = false;
+            $value = $this->current_value;
+
+            if (is_null($value)) {
+                $value = $this->get_default_value();
+            }
+
+            return $value;
+        }
+
+        parent::__get($name);
     }
 
     public function create_array_types()
@@ -44,11 +70,13 @@ class arrays extends type
         $exported_key_type_args   = var_export($this->key_type_args, true);
         $exported_value_type_args = var_export($this->value_type_args, true);
         $key_types_count = count($this->key_type_args);
+        $last_key_index  = $key_types_count - 1;
 
         $class = "
             class $type_name extends arrays{
                 protected \$key_type_args   = $exported_key_type_args;
                 protected \$key_types_count = $key_types_count;
+                protected \$last_key_index  = $last_key_index;
                 protected \$value_type_args = $exported_value_type_args;
             }
             ";
@@ -117,21 +145,28 @@ class arrays extends type
 
     /**
      *
-     * @param string $name
      * @return mixed
      * @throws Exception
      */
-    public function __get($name)
+    public function get_default_value()
     {
-        if ($name == 'value') {
-            if (! $this->data) {
-                throw new Exception('The array keys must be defined to get the value');
-            }
+        $data = $this->data;
 
-            return $this->current_value;
+        foreach ($this->key_types as $index => $key_type) {
+            $key = $key_type->value;
+
+            if (isset($data[$key]) and ($index == $this->last_key_index or ! empty($data[$key]))) {
+                $data = $data[$key];
+
+            } elseif (isset($data[self::OTHERS])) {
+                $data = $data[self::OTHERS];
+
+            } else {
+                throw new Exception('The array value has no default value');
+            }
         }
 
-        parent::__get($name);
+        return $data;
     }
 
     /**
@@ -149,7 +184,6 @@ class arrays extends type
             throw new Exception("The number of keys is invalid: $keys_count != $this->key_types_count");
         }
 
-        $last_index = $this->key_types_count - 1;
         $this->current_value = &$this->data;
 
         foreach ($this->key_types as $index => $key_type) {
@@ -157,7 +191,7 @@ class arrays extends type
             $key = $key_type->value;
 
             if (! isset($this->current_value[$key])) {
-                if ($index != $last_index) {
+                if ($index != $this->last_key_index) {
                     $this->current_value[$key] = [];
                 } else {
                     $this->current_value[$key] = null;
@@ -167,7 +201,43 @@ class arrays extends type
             $this->current_value = &$this->current_value[$key];
         }
 
+        $this->is_key_set = true;
+
         return $this;
+    }
+
+    /**
+     *
+     * @param array $array
+     * @param int $key_index
+     * @return array
+     * @throws Exception
+     */
+    public function set_data($array, $key_index = 0)
+    {
+        if (! is_array($array))  {
+            throw new Exception("The value is not an array for index: $key_index");
+        }
+
+        $data = [];
+        $key_type = $this->key_types[$key_index];
+
+        foreach ($array as $key => $value) {
+            if ($key != self::OTHERS) {
+                $key_type->value = $key;
+                $key = $key_type->value;
+            }
+
+            if ($key_index == $this->last_key_index)  {
+                $this->value_type->value = $value;
+                $data[$key] = $value;
+
+            } else {
+                $data[$key] = $this->set_data($value, $key_index + 1);
+            }
+        }
+
+        return $data;
     }
 
     /**
@@ -176,12 +246,13 @@ class arrays extends type
      */
     public function set_value($value)
     {
-        if (! $this->data) {
-            throw new Exception('The array keys must be defined to set the value');
+        if ($this->is_key_set) {
+            $this->is_key_set = false;
+            $this->value_type->value = $value;
+            $this->current_value = $this->value_type->value;
+        } else {
+            $this->data = $this->set_data($value);
         }
-
-        $this->value_type->value = $value;
-        $this->current_value = $this->value_type->value;
     }
 
     /**

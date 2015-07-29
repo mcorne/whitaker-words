@@ -24,10 +24,31 @@ $a->value = 12;
 $a->key(2, 1)->value = 21;
 echo $a->key(2, 1)->value;
 echo "\n";
-echo $a->key(3, 3)->value;
+// echo $a->key(3, 3)->value;
 echo "\n";
 echo $a;
 echo "\n";
+
+$b = arrays::create(
+    [ // values
+        1              => [4 => 11, 5 => 22, 6 => 33],
+        2              => [4 => 44, arrays::OTHERS => 55],
+        arrays::OTHERS => [5 => 66, arrays::OTHERS => 77],
+
+    ],
+    'integer', // value type
+    ['integer', 1, 4], // key type 1
+    [4, 6]  // key type 2
+);
+echo $b;
+echo "\n";
+echo $b->key(1, 5)->value;
+echo "\n";
+echo $b->key(2, 5)->value;
+echo "\n";
+echo $b->key(3, 5)->value;
+echo "\n";
+
 exit;
 
 //
@@ -46,15 +67,6 @@ $a = new_array1::create(
 );
 
 // as brand new type
-$a = arrays::create(
-    [ // values
-        1 => [0 => 11, 1 => 22],
-        2 => [0 => 33, 1 => 44],
-    ],
-    'integer', // value type
-    ['integer', 1, 2], // key type 1
-    [0, 1]  // key type 2
-);
 
 // default interger with subtypes gather from input
 $array = [
@@ -63,6 +75,4 @@ $array = [
 ];
 $a = arrays::create($array);
 
-
-
-$a->k(1, 2)->v = 123;
+// TODO: handle others, add keys

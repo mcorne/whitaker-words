@@ -3,7 +3,8 @@ type::$custom_types = require 'custom_types.php';
 
 class type
 {
-    public static $custom_types;
+    public    static $custom_types;
+    protected static $number = 0;
 
     /**
      * Stores the type value
@@ -187,8 +188,7 @@ class type
      */
     public function create_temp_type_name()
     {
-        static $number = 0;
-        $temp_type_name = 'temp_type_' . $number++;
+        $temp_type_name = 'temp_type_' . self::$number++;
 
         return $temp_type_name;
     }
