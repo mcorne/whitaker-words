@@ -3,7 +3,9 @@ type::$custom_types = require 'custom_types.php';
 
 class type
 {
-    public    static $custom_types;
+    public static    $custom_types;
+    protected        $first;
+    protected        $last;
     protected static $number = 0;
 
     /**
@@ -42,7 +44,7 @@ class type
      */
     public function __get($name)
     {
-        if ($name == 'value') {
+        if ($name == 'value' or $name == 'v') {
             return $this->data;
         }
 
@@ -61,7 +63,7 @@ class type
      */
     public function __set($name, $value)
     {
-        if ($name != 'value') {
+        if ($name != 'value' and $name != 'v') {
             throw new Exception("The property is invalid: $name.");
         }
 
@@ -363,6 +365,19 @@ class type
         $type_class = $parent_type->create_type($type_name, $type_args);
 
         return $type_class;
+    }
+
+    public static function range()
+    {
+        $type = new static();
+
+        if (is_null($type->first) or is_null($type->last) or ($type->last - $type->first) > 100000) {
+            throw new Exception('The range is too large.');
+        }
+
+        $range = range($type->first, $type->last);
+
+        return $range;
     }
 
     /**

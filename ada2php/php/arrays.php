@@ -37,7 +37,7 @@ class arrays extends type
      */
     public function __get($name)
     {
-        if ($name == 'value' and $this->is_key_set) {
+        if ($this->is_key_set and ($name == 'value' or $name == 'v')) {
             $this->is_key_set = false;
 
             if (is_null($value = $this->current_value) and
@@ -187,6 +187,19 @@ class arrays extends type
         }
 
         return $value;
+    }
+
+    /**
+     * Alias of key()
+     *
+     * @param mixed $key1 value
+     * @param mixed $key2 value etc.
+     * @return $this
+     * @throws Exception
+     */
+    public function k()
+    {
+        return call_user_func_array([$this, 'key'], func_get_args());
     }
 
     /**

@@ -24,7 +24,7 @@ echo "\n";
 // $e->value = null;
 
 $f = which_type::create($b);
-$f->value = 4;
+$f->v = 4;
 echo $f;
 echo "\n";
 echo $b;
@@ -51,7 +51,7 @@ echo $i->is_constant;
 echo "\n";
 // $i->value = 456;
 
-integer::new_type('bug_range', -13, 258);
+integer::new_type('bug_range', -13, 12);
 $j = bug_range::create(0);
 echo $j->first;
 echo "\n";
@@ -59,5 +59,25 @@ echo $j->last;
 echo "\n";
 echo $j->size;
 echo "\n";
+echo bug_range::pos(10);
+echo "\n";
+echo bug_range::val(10);
+echo "\n";
+echo bug_range::pred(10);
+echo "\n";
+echo bug_range::succ(10);
+echo "\n";
+print_r(bug_range::range());
+echo "\n";
 
-// TODO: handle: type Byte        is mod 256; -- an unsigned byte
+$class = integer::new_type('integer2');
+print_r((array) $class);
+echo "\n";
+$class = integer::new_type('integer3', null, 22);
+print_r((array) $class);
+echo "\n";
+$class = integer::new_type('integer4', 11);
+print_r((array) $class);
+echo "\n";
+
+// TODO: handle: type Byte is mod 256; -- an unsigned byte, range

@@ -50,15 +50,21 @@ class integer extends type
      */
     public function create_type_class($type_name, $first = null, $last = null)
     {
-        $exported_last  = is_null($last)  ? 'null' : $last;
-        $exported_first = is_null($first) ? 'null' : $first;
+        if (is_null($first)) {
+            $first = $this->first;
+        }
+
+        if (is_null($last)) {
+            $last = $this->last;
+        }
+
         $size  = $this->calculate_size($first, $last);
 
         $class = "
             class $type_name extends integer
             {
-                protected \$first = $exported_first;
-                protected \$last  = $exported_last;
+                protected \$first = $first;
+                protected \$last  = $last;
                 protected \$size  = $size;
             }
             ";
@@ -93,12 +99,66 @@ class integer extends type
     }
 
     /**
+     * Returns the position of an integer
+     *
+     * That is the integer itself.
+     * Note that ADA allows for the integer to be out of range.
+     *
+     * @param int $value
+     * @return int
+     */
+    public static function pos($value)
+    {
+        return $value;
+    }
+
+    /**
+     * Returs the previous value of an integer
+     *
+     * Note that ADA allows for the integer to be out of range.
+     *
+     * @param int $val
+     * @return int
+     */
+    public static function pred($val)
+    {
+        return $val - 1;
+    }
+
+    /**
      *
      * @param int $value
      */
     public function set_value($value)
     {
         $this->data = (int) (float) $value;
+    }
+
+    /**
+     * Returs the following value of an integer
+     *
+     * Note that ADA allows for the integer to be out of range.
+     *
+     * @param int $val
+     * @return int
+     */
+    public static function succ($val)
+    {
+        return $val + 1;
+    }
+
+    /**
+     * Returns the integer for a given position
+     *
+     * That is the integer itself.
+     * Note that ADA allows for the integer to be out of range.
+     *
+     * @param int $pos
+     * @return int
+     */
+    public static function val($pos)
+    {
+        return $pos;
     }
 
     /**
