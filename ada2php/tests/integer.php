@@ -88,6 +88,3 @@ echo "\n";
 $class = integer::new_type('integer4', 11);
 print_r((array) $class);
 echo "\n";
-
-
-// TODO: make first and last static, like pos, val etc.

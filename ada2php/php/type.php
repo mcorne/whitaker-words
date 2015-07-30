@@ -14,6 +14,8 @@ class type
      */
     protected $data;
 
+    protected $data_range;
+
     protected $first;
     public    $is_constant = false;
     protected $last;
@@ -21,6 +23,7 @@ class type
     protected static $number = 0;
 
     protected static $singletons;
+    protected $size;
 
     /**
      *
@@ -46,8 +49,8 @@ class type
      */
     public function __construct($value = null)
     {
-        // unsets the value property which may only be accessed via magic methods
-        unset($this->value);
+        // unsets properties which may only be accessed via magic methods
+        unset($this->range, $this->value);
 
         if (is_null($value)) {
             // there is no value, eg variable declaration, sets the value to null
@@ -66,6 +69,13 @@ class type
     {
         if ($name == 'value' or $name == 'v') {
             return $this->data;
+        }
+
+        if ($name == 'range') {
+            if (! isset($this->data_range)) {
+                $this->data_range = $this->get_range();
+            }
+            return $this->data_range;
         }
 
         if (property_exists($this, $name)) {
@@ -239,7 +249,7 @@ class type
      */
     public function create_type_class($type_name)
     {
-        throw new Exception(__FUNCTION__ .  '() method is unavailable.');
+        throw new Exception($this->get_unavailable_method_message(__FUNCTION__));
     }
 
     /**
@@ -284,6 +294,18 @@ class type
         }
 
         return $value;
+    }
+
+    public function get_range()
+    {
+        throw new Exception($this->get_unavailable_method_message(__FUNCTION__));
+    }
+
+    public function get_unavailable_method_message($method_name)
+    {
+        $message = sprintf('The %s::%s() method is unavailable.', get_class($this), $method_name);
+
+        return $message;
     }
 
     /**
@@ -390,7 +412,7 @@ class type
      */
     public function set_value($value)
     {
-        throw new Exception(__FUNCTION__ .  '() method is unavailable.');
+        throw new Exception($this->get_unavailable_method_message(__FUNCTION__));
     }
 
     public static function singleton()
@@ -442,7 +464,7 @@ class type
      */
     public function validate_type_properties()
     {
-        throw new Exception(__FUNCTION__ .  '() method is unavailable.');
+        throw new Exception($this->get_unavailable_method_message(__FUNCTION__));
     }
 
     /**

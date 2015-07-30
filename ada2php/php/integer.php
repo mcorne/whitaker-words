@@ -10,39 +10,9 @@ class integer extends type
 {
     const MAX_RANGE = 100000;
 
-    protected $data_range;
-
     protected $first = -2147483648; // 0x8000 0000, 32 bits
     protected $last  =  2147483647; // 0x7FFF FFFF, 32 bits
     protected $size  = 32;
-
-    /**
-     *
-     * @param mixed $value
-     */
-    public function __construct($value = null)
-    {
-        // unsets the range property which may only be accessed via magic methods
-        unset($this->range);
-
-        parent::__construct($value);
-    }
-
-    /**
-     *
-     * @param string $name
-     */
-    public function __get($name)
-    {
-        if ($name == 'range') {
-            if (! isset($this->data_range)) {
-                $this->data_range = $this->get_range();
-            }
-            return $this->data_range;
-        }
-
-        return parent::__get($name);
-    }
 
     /**
      * Calculates the size of the integer sub type in bits

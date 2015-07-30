@@ -260,10 +260,27 @@ class arrays extends type
         $data = [];
         $key_type = $this->key_types[$key_index];
 
+        if (empty($array[self::KEY])) {
+            $add_keys = false;
+        } else {
+            $add_keys = true;
+            $key_values = $key_type->range;
+            unset($array[self::KEY]);
+        }
+
         foreach ($array as $key => $value) {
-            if ($key != self::OTHERS) {
-                $key_type->value = $key;
-                $key = $key_type->value;
+            if ($key !== self::OTHERS) {
+                if ($add_keys) {
+                    if (! isset($key_values[$key])) {
+                        throw new Exception("The key index is invalid: $key");
+                    }
+
+                    $key = $key_values[$key];
+
+                } else {
+                    $key_type->value = $key;
+                    $key = $key_type->value;
+                }
             }
 
             if ($key_index == $this->last_key_index)  {

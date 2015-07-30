@@ -77,6 +77,15 @@ echo "\n";
 
 exit;
 
+$array = [
+    ['11', '22'],
+    ['33', '33'],
+];
+$d = arrays::create($array);
+echo $d;
+echo "\n";
+
+
 //
 
 // must define ranges for keys if undefined
@@ -92,13 +101,9 @@ $a = new_array1::create(
     [0, 1]  // key type 2 range only
 );
 
-// as brand new type
-
 // default interger with subtypes gather from input
 $array = [
     ['11', '22'],
     ['33', '33'],
 ];
 $a = arrays::create($array);
-
-// TODO: add keys

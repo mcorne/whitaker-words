@@ -3,8 +3,6 @@ require_once 'type.php';
 
 class float extends type
 {
-    protected $size = 32;
-
     /**
      *
      * @param string $type_name

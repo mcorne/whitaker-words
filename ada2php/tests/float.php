@@ -48,4 +48,6 @@ echo $j->last;
 echo "\n";
 echo $j->size;
 echo "\n";
+echo bug_range::first();
+echo "\n";
 

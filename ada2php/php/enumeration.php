@@ -63,6 +63,11 @@ class enumeration extends type
         return [$values, $indexes];
     }
 
+    public function get_range()
+    {
+        return $this->values;
+    }
+
     /**
      *
      * @param array $values

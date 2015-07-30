@@ -29,6 +29,8 @@ echo mid_week::pos('thu');
 echo "\n";
 echo mid_week::val(3);
 echo "\n";
+print_r(mid_week::range());
+echo "\n";
 
 $c = boolean::create(true);
 echo $c;
