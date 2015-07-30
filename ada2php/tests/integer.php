@@ -80,4 +80,5 @@ $class = integer::new_type('integer4', 11);
 print_r((array) $class);
 echo "\n";
 
-// TODO: handle: type Byte is mod 256; -- an unsigned byte, range
+
+// TODO: make first and last static, like pos, val etc.

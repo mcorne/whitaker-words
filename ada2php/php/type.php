@@ -4,20 +4,21 @@ type::$custom_types = require 'custom_types.php';
 class type
 {
     public static    $custom_types;
-    protected        $first;
-    protected        $last;
-    protected static $number = 0;
 
     /**
      * Stores the type value
      *
-     * Note that $this->value is used to get or set the type value via a magic method.
+     * Note that $this->value is used to get or set the type value via magic methods.
      *
      * @var mixed
      */
     protected $data;
 
-    public $is_constant = false;
+    protected $first;
+    public    $is_constant = false;
+    protected $last;
+
+    protected static $number = 0;
 
     /**
      *
@@ -25,8 +26,8 @@ class type
      */
     public function __construct($value = null)
     {
-        // the property $value is not meant to be set, it may only be accessed with magic methods
-        // unsets the value property if present
+        // some properties are not meant to be set, they may only be accessed with magic methods
+        // unsets these properties if present
         unset($this->value);
 
         if (is_null($value)) {
@@ -365,19 +366,6 @@ class type
         $type_class = $parent_type->create_type($type_name, $type_args);
 
         return $type_class;
-    }
-
-    public static function range()
-    {
-        $type = new static();
-
-        if (is_null($type->first) or is_null($type->last) or ($type->last - $type->first) > 100000) {
-            throw new Exception('The range is too large.');
-        }
-
-        $range = range($type->first, $type->last);
-
-        return $range;
     }
 
     /**

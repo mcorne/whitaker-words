@@ -51,6 +51,30 @@ echo "\n";
 echo $b->key(3, 6)->value;
 echo "\n";
 
+
+$c = arrays::create(
+    [ // values
+        [11, 22, 33, arrays::KEY => true],
+        [1 => 44, arrays::OTHERS => 55, arrays::KEY => true], // the index is a key index here
+        arrays::OTHERS => [5 => 66, arrays::OTHERS => 77],
+        arrays::KEY => true,
+
+    ],
+    'integer', // value type
+    ['integer', 1, 4], // key type 1
+    [4, 6]  // key type 2
+);
+echo $c;
+echo "\n";
+echo $c->key(1, 5)->value;
+echo "\n";
+echo $c->key(2, 5)->value;
+echo "\n";
+echo $c->key(3, 5)->value;
+echo "\n";
+echo $c->key(3, 6)->value;
+echo "\n";
+
 exit;
 
 //

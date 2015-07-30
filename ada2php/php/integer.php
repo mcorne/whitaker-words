@@ -1,32 +1,36 @@
 <?php
 require_once 'type.php';
 
+/**
+ * The ADA 32 bit integer type
+ *
+ * @toto handle mod, eg type Byte is mod 256
+ */
 class integer extends type
 {
+    const MAX_RANGE = 100000;
+
     protected $first = -2147483648; // 0x8000 0000, 32 bits
     protected $last  =  2147483647; // 0x7FFF FFFF, 32 bits
     protected $size  = 32;
 
     /**
+     * Calculates the size of the integer sub type in bits
      *
      * @param int $first
      * @param int $last
      * @return int
      */
-    public function calculate_size($first, $last)
+    public function calculate_size_in_bits($first, $last)
     {
-        if (is_null($first) or is_null($last)) {
-            $size = $this->size;
-
-        } else {
-            $greatest_boundary = max(abs($first), abs($last));
-            $size = $this->count_significant_bits($greatest_boundary);
-        }
+        $greatest_boundary = max(abs($first), abs($last));
+        $size = $this->count_significant_bits($greatest_boundary);
 
         return $size;
     }
 
     /**
+     * Counts the number of significant bits of a positive integer
      *
      * @param int $positive
      * @return int
@@ -42,6 +46,7 @@ class integer extends type
     }
 
     /**
+     * Creates the sub type class
      *
      * @param string $type_name
      * @param int $first
@@ -58,14 +63,17 @@ class integer extends type
             $last = $this->last;
         }
 
-        $size  = $this->calculate_size($first, $last);
+        $size  = $this->calculate_size_in_bits($first, $last);
+        $range = $this->get_range($first, $last);
+        $exported_range = var_export($range, true);
 
         $class = "
             class $type_name extends integer
             {
-                protected \$first = $first;
-                protected \$last  = $last;
-                protected \$size  = $size;
+                protected        \$first = $first;
+                protected        \$last  = $last;
+                protected static \$range = $exported_range;
+                protected        \$size  = $size;
             }
             ";
 
@@ -73,6 +81,9 @@ class integer extends type
     }
 
     /**
+     * Filters the integer
+     *
+     * Note that ADA allows the underscore character as thousand separator etc.
      *
      * @param int $value
      * @return int
@@ -85,6 +96,25 @@ class integer extends type
     }
 
     /**
+     *
+     * @param int $first
+     * @param int $last
+     * @return array
+     * @throws Exception
+     */
+    public function get_range($first, $last)
+    {
+        if (is_null($first) or is_null($last) or ($last - $first) > self::MAX_RANGE) {
+            throw new Exception('The range is too large: > ' . self::MAX_RANGE);
+        }
+
+        $range = range($first, $last);
+
+        return $range;
+    }
+
+    /**
+     * Validates the value is an integer
      *
      * @param int $value
      * @throws Exception
@@ -113,7 +143,7 @@ class integer extends type
     }
 
     /**
-     * Returs the previous value of an integer
+     * Returns the previous value of an integer
      *
      * Note that ADA allows for the integer to be out of range.
      *
@@ -135,7 +165,7 @@ class integer extends type
     }
 
     /**
-     * Returs the following value of an integer
+     * Returns the following value of an integer
      *
      * Note that ADA allows for the integer to be out of range.
      *
@@ -162,6 +192,7 @@ class integer extends type
     }
 
     /**
+     * Validates the integer sub type properties
      *
      * @param int $first
      * @param int $last
@@ -182,9 +213,9 @@ class integer extends type
     }
 
     /**
+     * Validates the value is an integer within the parent range
      *
      * @param int $value
-     * @throws Exception
      */
     public function validate_value($value)
     {

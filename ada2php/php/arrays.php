@@ -3,6 +3,16 @@ require_once 'type.php';
 
 class arrays extends type
 {
+    /**
+     * The (sub) array key to set to true or false to specify if keys must be added to the values
+     */
+    const KEY = '__KEY__';
+
+    /**
+     * The (sub) array key used for default value(s)
+     *
+     * This is used in place of ADA "others".
+     */
     const OTHERS = '__OTHERS__';
 
     protected $current_value;
@@ -191,11 +201,6 @@ class arrays extends type
 
     /**
      * Alias of key()
-     *
-     * @param mixed $key1 value
-     * @param mixed $key2 value etc.
-     * @return $this
-     * @throws Exception
      */
     public function k()
     {
