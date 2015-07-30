@@ -127,11 +127,12 @@ class enumeration extends type
      * @param string|enumeration $value
      * @return type
      */
-    public function pos($value)
+    public static function pos($value)
     {
-        $value = $this->filter_and_validate($value);
+        $enumeration = static::singleton();
+        $value = $enumeration->filter_and_validate($value);
 
-        return $this->indexes[$value];
+        return $enumeration->indexes[$value];
     }
 
     /**
@@ -140,17 +141,18 @@ class enumeration extends type
      * @return string
      * @throws Exception
      */
-    public function pred($value)
+    public static function pred($value)
     {
-        $value = $this->filter_and_validate($value);
+        $enumeration = static::singleton();
+        $value = $enumeration->filter_and_validate($value);
 
-        if ($value == $this->first) {
+        if ($value == $enumeration->first) {
             throw new Exception('The first enumeration value has no predecessor.');
         }
 
-        $pred_index = $this->indexes[$value] - 1;
+        $pred_index = $enumeration->indexes[$value] - 1;
 
-        return $this->values[$pred_index];
+        return $enumeration->values[$pred_index];
     }
 
     /**
@@ -168,17 +170,18 @@ class enumeration extends type
      * @return mixed
      * @throws Exception
      */
-    public function succ($value)
+    public static function succ($value)
     {
-        $value = $this->filter_and_validate($value);
+        $enumeration = static::singleton();
+        $value = $enumeration->filter_and_validate($value);
 
-        if ($value == $this->last) {
+        if ($value == $enumeration->last) {
             throw new Exception('The last enumeration value has no successor.');
         }
 
-        $pred_index = $this->indexes[$value] + 1;
+        $pred_index = $enumeration->indexes[$value] + 1;
 
-        return $this->values[$pred_index];
+        return $enumeration->values[$pred_index];
     }
 
     /**
@@ -186,11 +189,12 @@ class enumeration extends type
      * @param int $index
      * @return string
      */
-    public function val($index)
+    public static function val($index)
     {
-        $this->is_valid_index($index);
+        $enumeration = static::singleton();
+        $enumeration->is_valid_index($index);
 
-        return $this->values[(int) $index];
+        return $enumeration->values[(int) $index];
     }
 
     /**

@@ -3,7 +3,7 @@ type::$custom_types = require 'custom_types.php';
 
 class type
 {
-    public static    $custom_types;
+    public static $custom_types;
 
     /**
      * Stores the type value
@@ -20,14 +20,33 @@ class type
 
     protected static $number = 0;
 
+    protected static $singletons;
+
+    /**
+     *
+     * @param string $name
+     * @param array $args
+     * @return mixed
+     * @throws Exception
+     */
+    public static function __callStatic($name, $args)
+    {
+        if (! in_array($name, ['first', 'last', 'range', 'size'])) {
+            throw new Exception("The static method is invalid: $name.");
+        }
+
+        $value = static::singleton()->$name;
+
+        return $value;
+    }
+
     /**
      *
      * @param mixed $value
      */
     public function __construct($value = null)
     {
-        // some properties are not meant to be set, they may only be accessed with magic methods
-        // unsets these properties if present
+        // unsets the value property which may only be accessed via magic methods
         unset($this->value);
 
         if (is_null($value)) {
@@ -144,8 +163,7 @@ class type
     public static function create_temp($type_args)
     {
         $value = array_shift($type_args);
-        $parent_type = new static();
-        $temp_type_name = $parent_type->create_temp_type($type_args);
+        $temp_type_name = static::singleton()->create_temp_type($type_args);
         $temp_type = new $temp_type_name($value);
 
         return $temp_type;
@@ -261,7 +279,7 @@ class type
     public function filter_numeric($value)
     {
         if (is_string($value)) {
-            // removes unserscores from a numeric that is used as a digit separator in ADA
+            // removes unserscores from a numeric that may be used as a digit separator in ADA
             $value = str_replace('_', '', $value);
         }
 
@@ -306,8 +324,7 @@ class type
      */
     public static function load_type($type_name)
     {
-        $type = new self();
-        $type->load_type_dyn($type_name);
+        self::singleton()->load_type_dyn($type_name);
     }
 
     /**
@@ -350,10 +367,8 @@ class type
      */
     public static function new_type($type_name)
     {
-        $parent_type = new static();
-
         if (! is_string($type_name) or ! preg_match('~^[a-z_]\w*$~i', $type_name)) {
-            $type_name = $parent_type->convert_to_string($type_name);
+            $type_name = static::singleton()->convert_to_string($type_name);
             throw new Exception("The type (class) name is invalid: $type_name.");
         }
 
@@ -363,7 +378,7 @@ class type
 
         $type_args = func_get_args();
         array_shift($type_args);
-        $type_class = $parent_type->create_type($type_name, $type_args);
+        $type_class = static::singleton()->create_type($type_name, $type_args);
 
         return $type_class;
     }
@@ -376,6 +391,17 @@ class type
     public function set_value($value)
     {
         throw new Exception(__FUNCTION__ .  '() method is unavailable.');
+    }
+
+    public static function singleton()
+    {
+        $type_name = get_called_class();
+
+        if (! isset(self::$singletons[$type_name])) {
+            self::$singletons[$type_name] = new static();
+        }
+
+        return self::$singletons[$type_name];
     }
 
     /**

@@ -10,9 +10,39 @@ class integer extends type
 {
     const MAX_RANGE = 100000;
 
+    protected $data_range;
+
     protected $first = -2147483648; // 0x8000 0000, 32 bits
     protected $last  =  2147483647; // 0x7FFF FFFF, 32 bits
     protected $size  = 32;
+
+    /**
+     *
+     * @param mixed $value
+     */
+    public function __construct($value = null)
+    {
+        // unsets the range property which may only be accessed via magic methods
+        unset($this->range);
+
+        parent::__construct($value);
+    }
+
+    /**
+     *
+     * @param string $name
+     */
+    public function __get($name)
+    {
+        if ($name == 'range') {
+            if (! isset($this->data_range)) {
+                $this->data_range = $this->get_range();
+            }
+            return $this->data_range;
+        }
+
+        return parent::__get($name);
+    }
 
     /**
      * Calculates the size of the integer sub type in bits
@@ -64,16 +94,13 @@ class integer extends type
         }
 
         $size  = $this->calculate_size_in_bits($first, $last);
-        $range = $this->get_range($first, $last);
-        $exported_range = var_export($range, true);
 
         $class = "
             class $type_name extends integer
             {
-                protected        \$first = $first;
-                protected        \$last  = $last;
-                protected static \$range = $exported_range;
-                protected        \$size  = $size;
+                protected \$first = $first;
+                protected \$last  = $last;
+                protected \$size  = $size;
             }
             ";
 
@@ -97,18 +124,16 @@ class integer extends type
 
     /**
      *
-     * @param int $first
-     * @param int $last
      * @return array
      * @throws Exception
      */
-    public function get_range($first, $last)
+    public function get_range()
     {
-        if (is_null($first) or is_null($last) or ($last - $first) > self::MAX_RANGE) {
+        if (is_null($this->first) or is_null($this->last) or ($this->last - $this->first) > self::MAX_RANGE) {
             throw new Exception('The range is too large: > ' . self::MAX_RANGE);
         }
 
-        $range = range($first, $last);
+        $range = range($this->first, $this->last);
 
         return $range;
     }
