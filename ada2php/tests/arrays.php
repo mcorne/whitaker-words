@@ -28,6 +28,7 @@ echo "\n";
 echo "\n";
 echo $a;
 echo "\n";
+echo "\n";
 
 $b = arrays::create(
     [ // values
@@ -50,14 +51,15 @@ echo $b->key(3, 5)->value;
 echo "\n";
 echo $b->key(3, 6)->value;
 echo "\n";
+echo "\n";
 
 
 $c = arrays::create(
     [ // values
-        [11, 22, 33, arrays::KEY => true],
-        [1 => 44, arrays::OTHERS => 55, arrays::KEY => true], // the index is a key index here
+        [11, 22, 33, arrays::KEY => false], //
+        [4 => 44, arrays::OTHERS => 55], // arrays::KEY => true
         arrays::OTHERS => [5 => 66, arrays::OTHERS => 77],
-        arrays::KEY => true,
+        // arrays::KEY => false,
 
     ],
     'integer', // value type
@@ -74,16 +76,19 @@ echo $c->key(3, 5)->value;
 echo "\n";
 echo $c->key(3, 6)->value;
 echo "\n";
-
-exit;
+echo "\n";
 
 $array = [
     ['11', '22'],
     ['33', '33'],
 ];
-$d = arrays::create($array);
+$d = arrays::create($array, 'Integer', [5, 6], [5, 6]);
+// $d = arrays::create($array, 'integer', 'positive', 'positive'); // TODO: fix to accept no range as here
 echo $d;
 echo "\n";
+echo "\n";
+
+exit;
 
 
 //

@@ -4,7 +4,7 @@ require_once 'type.php';
 class arrays extends type
 {
     /**
-     * The (sub) array key to set to true or false to specify if keys must be added to the values
+     * The (sub) array key to set to true or false to specify if the (sub) array has keys or not
      */
     const KEY = '__KEY__';
 
@@ -201,6 +201,26 @@ class arrays extends type
     }
 
     /**
+     *
+     * @param array $array
+     * @return bool
+     */
+    public function is_array_with_keys($array)
+    {
+        if (isset($array[self::KEY])) {
+            return (bool) $array[self::KEY];
+        }
+
+        while (key($array) === self::OTHERS) {
+            next($array);
+        }
+
+        $is_array_with_keys = key($array) !== 0;
+
+        return $is_array_with_keys;
+    }
+
+    /**
      * Alias of key()
      */
     public function k()
@@ -261,26 +281,22 @@ class arrays extends type
         $data = [];
         $key_type = $this->key_types[$key_index];
 
-        if (empty($array[self::KEY])) {
-            $add_keys = false;
-        } else {
-            $add_keys = true;
+        if (! $is_array_with_keys = $this->is_array_with_keys($array)) {
             $key_values = $key_type->range;
             unset($array[self::KEY]);
         }
 
         foreach ($array as $key => $value) {
             if ($key !== self::OTHERS) {
-                if ($add_keys) {
-                    if (! isset($key_values[$key])) {
-                        throw new Exception("The key index is invalid: $key");
-                    }
+                if ($is_array_with_keys) {
+                    $key_type->value = $key;
+                    $key = $key_type->value;
 
+                } elseif (isset($key_values[$key])) {
                     $key = $key_values[$key];
 
                 } else {
-                    $key_type->value = $key;
-                    $key = $key_type->value;
+                    throw new Exception("The key index is invalid: $key");
                 }
             }
 
