@@ -76,15 +76,16 @@ class arrays extends type
      * @param string $type_name
      * @return string
      */
-    public function create_type_class($type_name)
+    public function create_type_class($parent_type_name, $type_name, $value_type_args = null, $key_types_args = null)
     {
-        $exported_key_type_args   = var_export($this->key_type_args, true);
-        $exported_value_type_args = var_export($this->value_type_args, true);
-        $key_types_count = count($this->key_type_args);
+        $exported_value_type_args = var_export($value_type_args, true);
+        $exported_key_type_args   = var_export($key_types_args, true);
+        $key_types_count = count($key_types_args);
         $last_key_index  = $key_types_count - 1;
 
         $class = "
-            class $type_name extends arrays{
+            class $type_name extends $parent_type_name
+            {
                 protected \$key_type_args   = $exported_key_type_args;
                 protected \$key_types_count = $key_types_count;
                 protected \$last_key_index  = $last_key_index;
@@ -305,6 +306,7 @@ class arrays extends type
             $this->is_key_set = false;
             $this->value_type->value = $value;
             $this->current_value = $this->value_type->value;
+
         } else {
             $this->data = $this->set_data($value);
         }
@@ -315,13 +317,18 @@ class arrays extends type
      * @param mixed $value_type_args
      * @param mixed $key_type_args_1
      * @param mixed $key_type_args_2 etc.
+     * @return array
      */
     public function validate_type_properties($value_type_args = null)
     {
-        $this->value_type_args = $this->fix_value_type_args($value_type_args);
+        $value_type_args = $this->fix_value_type_args($value_type_args);
 
         $key_types_args = func_get_args();
         array_shift($key_types_args);
-        $this->key_type_args = $this->fix_key_type_args($key_types_args);
+        $key_types_args = $this->fix_key_type_args($key_types_args);
+
+        $type_properties = [$value_type_args, $key_types_args];
+
+        return $type_properties;
     }
 }

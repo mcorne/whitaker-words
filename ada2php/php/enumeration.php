@@ -195,7 +195,9 @@ class enumeration extends type
             list($values, $indexes) = $this->extract_sub_range_values($first, $last);
         }
 
-        return [$first, $last, $values, $indexes];
+        $type_properties = [$first, $last, $values, $indexes];
+
+        return $type_properties;
     }
 
     /**

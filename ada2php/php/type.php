@@ -474,7 +474,9 @@ class type
             throw new Exception("The first value is greater than the second one: $first > $last.");
         }
 
-        return [$first, $last];
+        $type_properties = [$first, $last];
+
+        return $type_properties;
     }
 
     /**
