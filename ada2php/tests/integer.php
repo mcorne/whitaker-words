@@ -3,8 +3,12 @@ set_include_path('../php');
 
 require_once 'integer.php';
 
-integer::new_type('which_type', 0, 9);
-integer::new_type('variant_type', 0, 9);
+$class = integer::new_type('which_type', 0, 9);
+echo $class;
+echo "\n";
+$class = integer::new_type('variant_type', 0, 9);
+echo $class;
+echo "\n";
 
 $a = which_type::create(1);
 $b = which_type::create(3);
@@ -80,11 +84,13 @@ echo bug_range::succ(10);
 echo "\n";
 
 $class = integer::new_type('integer2');
-print_r((array) $class);
+echo $class;
 echo "\n";
-$class = integer::new_type('integer3', null, 22);
-print_r((array) $class);
+$class = integer2::new_type('integer3', null, 22);
+echo $class;
 echo "\n";
-$class = integer::new_type('integer4', 11);
-print_r((array) $class);
+$class = integer3::new_type('integer4', 11);
+echo $class;
+echo "\n";
+echo integer4::last();
 echo "\n";

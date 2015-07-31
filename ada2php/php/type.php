@@ -20,10 +20,33 @@ class type
     public    $is_constant = false;
     protected $last;
 
+    protected $methods_to_overload = [
+        'create_type_class',        // create_type_class($type_name, $arg1, $arg2 ...), this method must be defined for all types
+        'get_range',                // get_range(), this method is meant to be defined for some types
+        'pos_dynamic',              // pos_dynamic($value), this method is meant to be defined for some types
+        'pred_dynamic',             // pred_dynamic($value), this method is meant to be defined for some types
+        'set_value',                // set_value($value), this method must be defined for all types
+        'succ_dynamic',             // succ_dynamic($value), this method is meant to be defined for some types
+        'val_dynamic',              // val_dynamic($index), this method is meant to be defined for some types
+        'validate_type_properties', // validate_type_properties($arg1, $arg2 ...), this method must be defined for all types
+    ];
+
     protected static $number = 0;
 
     protected static $singletons;
     protected $size;
+
+    public function __call($name, $args)
+    {
+        if (in_array($name, $this->methods_to_overload)) {
+            $message = sprintf('The %s::%s() method is unavailable.', get_class($this), $name);
+
+        } else {
+            $message = "The object method is invalid: $name.";
+        }
+
+        throw new Exception($message);
+    }
 
     /**
      *
@@ -34,13 +57,22 @@ class type
      */
     public static function __callStatic($name, $args)
     {
-        if (! in_array($name, ['first', 'last', 'range', 'size'])) {
-            throw new Exception("The static method is invalid: $name.");
+        if (in_array($name, ['first', 'last', 'range', 'size'])) {
+            // instanciates the type, returns the corresponding object property
+            // eg week_days::first() will return $week_days->first
+            $value = static::singleton()->$name;
+            return $value;
         }
 
-        $value = static::singleton()->$name;
+        if (in_array($name, ['pos', 'pred', 'succ', 'val'])) {
+            // instanciates the type, calls the corresponding object method
+            // eg week_days::succ('Mon') will call $week_days->succ_dynamic('Mon')
+            $name .= '_dynamic';
+            $value = call_user_func_array([static::singleton(), $name], $args);
+            return $value;
+       }
 
-        return $value;
+        throw new Exception("The static method is invalid: $name.");
     }
 
     /**
@@ -166,6 +198,26 @@ class type
 
     /**
      *
+     * @param array $type_args
+     * @return string
+     * @throws Exception
+     */
+    public function create_new_temp_type($type_args)
+    {
+        $parent_type_name = array_shift($type_args);
+        $this->load_type_dynamic($parent_type_name);
+        $parent_type = new $parent_type_name();
+
+        $temp_type_name = $this->create_temp_type_name();
+        $parent_type->create_type($temp_type_name, $type_args);
+
+        $temp_type = new $temp_type_name();
+
+        return $temp_type;
+    }
+
+    /**
+     *
      * @param mixed $value
      * @param array $type_args
      * @return object
@@ -194,26 +246,6 @@ class type
 
     /**
      *
-     * @param array $type_args
-     * @return string
-     * @throws Exception
-     */
-    public function create_new_temp_type($type_args)
-    {
-        $parent_type_name = array_shift($type_args);
-        $this->load_type_dyn($parent_type_name);
-        $parent_type = new $parent_type_name();
-
-        $temp_type_name = $this->create_temp_type_name();
-        $parent_type->create_type($temp_type_name, $type_args);
-
-        $temp_type = new $temp_type_name();
-
-        return $temp_type;
-    }
-
-    /**
-     *
      * @staticvar int $number
      * @return string
      */
@@ -232,24 +264,19 @@ class type
      */
     public function create_type($type_name, $type_args)
     {
-        call_user_func_array([$this, 'validate_type_properties'], $type_args);
+        $type_properties = call_user_func_array([$this, 'validate_type_properties'], $type_args);
 
-        array_unshift($type_args, $type_name);
-        $type_class = call_user_func_array([$this, 'load_type_class'], $type_args);
+        $class_args[] = get_class($this); // this is the parent type to extend
+        $class_args[] = $type_name;
+        $class_args = array_merge($class_args, $type_properties);
+
+        $type_class = call_user_func_array([$this, 'create_type_class'], $class_args);
+
+        if (eval($type_class) === false) {
+            throw new Exception("Cannot eval the type class: $type_name.");
+        }
 
         return $type_class;
-    }
-
-    /**
-     *
-     * @param string $type_name
-     * @param mixed $arg1
-     * @param mixed $arg2 etc
-     * @throws Exception
-     */
-    public function create_type_class($type_name)
-    {
-        throw new Exception($this->get_unavailable_method_message(__FUNCTION__));
     }
 
     /**
@@ -266,18 +293,8 @@ class type
         }
 
         $value = $this->filter_value($value);
-        $this->validate_value($value);
+        $value = $this->validate_value($value);
 
-        return $value;
-    }
-
-    /**
-     *
-     * @param mixed $value
-     * @return mixed
-     */
-    public function filter_value($value)
-    {
         return $value;
     }
 
@@ -296,16 +313,14 @@ class type
         return $value;
     }
 
-    public function get_range()
+    /**
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    public function filter_value($value)
     {
-        throw new Exception($this->get_unavailable_method_message(__FUNCTION__));
-    }
-
-    public function get_unavailable_method_message($method_name)
-    {
-        $message = sprintf('The %s::%s() method is unavailable.', get_class($this), $method_name);
-
-        return $message;
+        return $value;
     }
 
     /**
@@ -333,7 +348,7 @@ class type
         $type_args = static::$custom_types[$type_name];
 
         $parent_type_name = $type_args[0];
-        $this->load_type_dyn($parent_type_name);
+        $this->load_type_dynamic($parent_type_name);
 
         $type_args[0] = $type_name;
         call_user_func_array("$parent_type_name::new_type", $type_args);
@@ -346,7 +361,7 @@ class type
      */
     public static function load_type($type_name)
     {
-        self::singleton()->load_type_dyn($type_name);
+        self::singleton()->load_type_dynamic($type_name);
     }
 
     /**
@@ -354,29 +369,11 @@ class type
      * @param string $type_name
      * @throws Exception
      */
-    public function load_type_dyn($type_name)
+    public function load_type_dynamic($type_name)
     {
         if (! $this->type_exists($type_name)) {
             throw new Exception("The type is invalid: $type_name.");
         }
-    }
-
-    /**
-     *
-     * @param string $type_name
-     * @param mixed $arg1
-     * @param mixed $arg2 etc
-     * @throws Exception
-     */
-    public function load_type_class($type_name)
-    {
-        $type_class = call_user_func_array([$this, 'create_type_class'], func_get_args());
-
-        if (eval($type_class) === false) {
-            throw new Exception("Cannot eval the type class: $type_name.");
-        }
-
-        return $type_class;
     }
 
     /**
@@ -408,11 +405,10 @@ class type
     /**
      *
      * @param mixed $value
-     * @throws Exception
      */
     public function set_value($value)
     {
-        throw new Exception($this->get_unavailable_method_message(__FUNCTION__));
+        $this->data = $value;
     }
 
     public static function singleton()
@@ -457,23 +453,37 @@ class type
     }
 
     /**
+     * Validates the type range properties
      *
-     * @param mixed $arg1
-     * @param mixed $arg2 etc
+     * @param mixed $first
+     * @param mixed $last
+     * @return array
      * @throws Exception
      */
-    public function validate_type_properties()
+    public function validate_type_range_properties($first = null, $last = null)
     {
-        throw new Exception($this->get_unavailable_method_message(__FUNCTION__));
+        if (! is_null($first)) {
+            $first = $this->validate_value($first);
+        }
+
+        if (! is_null($last)) {
+            $last = $this->validate_value($last);
+        }
+
+        if (! is_null($first) and ! is_null($last) and $first > $last) {
+            throw new Exception("The first value is greater than the second one: $first > $last.");
+        }
+
+        return [$first, $last];
     }
 
     /**
      *
      * @param mixed $value
-     * @return boolean
+     * @return mixed
      */
     public function validate_value($value)
     {
-        return true;
+        return $value;
     }
 }

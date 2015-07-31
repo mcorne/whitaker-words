@@ -11,6 +11,7 @@ class boolean extends enumeration
     /**
      *
      * @param bool $value
+     * @return bool
      * @throws Exception
      */
     public function validate_value($value)
@@ -19,6 +20,8 @@ class boolean extends enumeration
             $value = $this->convert_to_string($value);
             throw new Exception("The value is not boolean: $value.");
         }
+
+        return $value;
     }
 
 }

@@ -4,19 +4,21 @@ require_once 'type.php';
 class float extends type
 {
     /**
+     * Creates the integer sub type class
      *
+     * @param string $parent_type_name
      * @param string $type_name
-     * @param float $first
-     * @param float $last
+     * @param int $first
+     * @param int $last
      * @return string
      */
-    public function create_type_class($type_name, $first = null, $last = null)
+    public function create_type_class($parent_type_name, $type_name, $first = null, $last = null)
     {
-        $last  = is_null($last)  ? 'null' : $last;
         $first = is_null($first) ? 'null' : $first;
+        $last  = is_null($last)  ? 'null' : $last;
 
         $class = "
-            class $type_name extends float
+            class $type_name extends $parent_type_name
             {
                 protected \$first = $first;
                 protected \$last  = $last;
@@ -49,46 +51,34 @@ class float extends type
             $value = $this->convert_to_string($value);
             throw new Exception("The value is not a float: $value");
         }
-
     }
 
     /**
-     *
-     * @param float $value
-     */
-    public function set_value($value)
-    {
-        $this->data = (float) $value;
-    }
-
-    /**
+     * Validates the float sub type properties
      *
      * @param float $first
      * @param float $last
+     * @return array
      */
     public function validate_type_properties($first = null, $last = null)
     {
-        if (! is_null($first)) {
-            parent::validate_value($first);
-        }
+        $type_properties = $this->validate_type_range_properties($first, $last);
 
-        if (! is_null($last)) {
-            parent::validate_value($last);
-        }
-
-        if (! is_null($first) and ! is_null($last) and $first > $last) {
-            throw new Exception("The first value is greater than the second one: $first > $last.");
-        }
+        return $type_properties;
     }
 
     /**
+     * Validates the value is a float within the parent type range
      *
-     * @param int $value
-     * @throws Exception
+     * @param float $value
+     * @return float
      */
     public function validate_value($value)
     {
         $this->is_float_value($value);
+        $value = (float) $value;
         $this->is_value_in_range($value);
+
+        return $value;
     }
 }

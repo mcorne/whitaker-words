@@ -46,14 +46,15 @@ class integer extends type
     }
 
     /**
-     * Creates the sub type class
+     * Creates the integer sub type class
      *
+     * @param string $parent_type_name
      * @param string $type_name
      * @param int $first
      * @param int $last
      * @return string
      */
-    public function create_type_class($type_name, $first = null, $last = null)
+    public function create_type_class($parent_type_name, $type_name, $first = null, $last = null)
     {
         if (is_null($first)) {
             $first = $this->first;
@@ -66,7 +67,7 @@ class integer extends type
         $size  = $this->calculate_size_in_bits($first, $last);
 
         $class = "
-            class $type_name extends integer
+            class $type_name extends $parent_type_name
             {
                 protected \$first = $first;
                 protected \$last  = $last;
@@ -120,70 +121,62 @@ class integer extends type
             $value = $this->convert_to_string($value);
             throw new Exception("The value is not an integer: $value");
         }
-
     }
 
     /**
-     * Returns the position of an integer
-     *
-     * That is the integer itself.
-     * Note that ADA allows for the integer to be out of range.
+     * Returns the position of an integer, that is the integer itself
      *
      * @param int $value
      * @return int
      */
-    public static function pos($value)
+    public function pos_dynamic($value)
     {
-        return $value;
+        $pos = $this->filter_and_validate($value);
+
+        return $pos;
     }
 
     /**
      * Returns the previous value of an integer
      *
-     * Note that ADA allows for the integer to be out of range.
-     *
-     * @param int $val
+     * @param int $value
      * @return int
      */
-    public static function pred($val)
+    public function pred_dynamic($value)
     {
-        return $val - 1;
-    }
+        $value = $this->filter_and_validate($value);
+        $value--;
+        $value = $this->validate_value($value);
 
-    /**
-     *
-     * @param int $value
-     */
-    public function set_value($value)
-    {
-        $this->data = (int) (float) $value;
+        return $value - 1;
     }
 
     /**
      * Returns the following value of an integer
      *
-     * Note that ADA allows for the integer to be out of range.
-     *
-     * @param int $val
+     * @param int $value
      * @return int
      */
-    public static function succ($val)
+    public function succ_dynamic($value)
     {
-        return $val + 1;
+        $value = $this->filter_and_validate($value);
+        $value++;
+        $value = $this->validate_value($value);
+
+        return $value;
     }
 
     /**
-     * Returns the integer for a given position
-     *
-     * That is the integer itself.
-     * Note that ADA allows for the integer to be out of range.
+     * Returns the integer for a given position, that is the integer itself
      *
      * @param int $pos
      * @return int
      */
-    public static function val($pos)
+    public function val_dynamic($pos)
     {
-        return $pos;
+        $value = $this->filter_and_validate($pos);
+
+        return $value;
     }
 
     /**
@@ -191,30 +184,27 @@ class integer extends type
      *
      * @param int $first
      * @param int $last
+     * @return array
      */
     public function validate_type_properties($first = null, $last = null)
     {
-        if (! is_null($first)) {
-            parent::validate_value($first);
-        }
+        $type_properties = $this->validate_type_range_properties($first, $last);
 
-        if (! is_null($last)) {
-            parent::validate_value($last);
-        }
-
-        if (! is_null($first) and ! is_null($last) and $first > $last) {
-            throw new Exception("The first value is greater than the second one: $first > $last.");
-        }
+        return $type_properties;
     }
 
     /**
-     * Validates the value is an integer within the parent range
+     * Validates the value is an integer within the parent type range
      *
      * @param int $value
+     * @return int
      */
     public function validate_value($value)
     {
         $this->is_integer_value($value);
+        $value = (int) (float) $value;
         $this->is_value_in_range($value);
+
+        return $value;
     }
 }
