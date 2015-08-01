@@ -124,14 +124,16 @@ class integer extends type
     }
 
     /**
-     * Returns the position of an integer, that is the integer itself
+     * Returns the position of an integer
+     *
+     * Note that ADA actually returns the integer itself.
      *
      * @param int $value
      * @return int
      */
     public function pos_dynamic($value)
     {
-        $pos = $this->filter_and_validate($value);
+        $pos = $this->filter_and_validate($value) - $this->first;
 
         return $pos;
     }
@@ -167,14 +169,22 @@ class integer extends type
     }
 
     /**
-     * Returns the integer for a given position, that is the integer itself
+     * Returns the integer for a given position or index
      *
-     * @param int $pos
+     * Note that ADA actually returns the integer itself.
+     *
+     * @param int $index
      * @return int
      */
-    public function val_dynamic($pos)
+    public function val_dynamic($index)
     {
-        $value = $this->filter_and_validate($pos);
+        if (! is_int($index)) {
+            $index = $this->convert_to_string($index);
+            throw new Exception("The index is invalid: $index");
+        }
+
+        $value = $index + $this->first;
+        $this->is_value_in_range($value);
 
         return $value;
     }

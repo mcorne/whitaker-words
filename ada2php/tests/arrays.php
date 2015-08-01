@@ -80,16 +80,17 @@ echo "\n";
 
 $array = [
     ['11', '22'],
-    ['33', '33'],
+    ['33', '44'],
 ];
-$d = arrays::create($array, 'Integer', [5, 6], [5, 6]);
-// $d = arrays::create($array, 'integer', 'positive', 'positive'); // TODO: fix to accept no range as here
+// $d = arrays::create($array, 'Integer', [5, 6], [5, 6]);
+$d = arrays::create($array, 'integer', 'natural', 'positive');
 echo $d;
+echo "\n";
+echo $d->key(1, 1)->value;
 echo "\n";
 echo "\n";
 
 exit;
-
 
 //
 

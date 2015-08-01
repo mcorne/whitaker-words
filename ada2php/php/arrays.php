@@ -282,7 +282,6 @@ class arrays extends type
         $key_type = $this->key_types[$key_index];
 
         if (! $is_array_with_keys = $this->is_array_with_keys($array)) {
-            $key_values = $key_type->range;
             unset($array[self::KEY]);
         }
 
@@ -291,12 +290,8 @@ class arrays extends type
                 if ($is_array_with_keys) {
                     $key_type->value = $key;
                     $key = $key_type->value;
-
-                } elseif (isset($key_values[$key])) {
-                    $key = $key_values[$key];
-
                 } else {
-                    throw new Exception("The key index is invalid: $key");
+                    $key = $key_type->val_dynamic($key);
                 }
             }
 
