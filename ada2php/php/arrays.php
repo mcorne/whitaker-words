@@ -72,6 +72,22 @@ class arrays extends type
 
     /**
      *
+     * @param array $value
+     * @param array $value_type_args
+     * @return array
+     */
+    public function add_array_default_args($value, $value_type_args)
+    {
+        $dimension = $this->calculate_array_dimension($value);
+        $key_type_args = array_fill(0, $dimension, null);
+        array_unshift($key_type_args, $value_type_args);
+        array_unshift($key_type_args, $value);
+
+        return $key_type_args;
+    }
+
+    /**
+     *
      * @param array $array
      * @return int
      */
@@ -91,37 +107,41 @@ class arrays extends type
     /**
      *
      * @param array $value
-     * @param array $value_type_args
      * @return object
      */
-    public static function create($value = null, $value_type_args = null)
+    public static function create($value = null, $arg1 = null)
     {
-        if (get_called_class() == __CLASS__ and func_num_args() <= 2) {
-            // this is the creation of an array from this class with no arguments, eg arrays::create([1, 2, 3]);
-            $array_args = self::singleton()->create_array_default_args($value, $value_type_args);
+        if (get_called_class() == __CLASS__) {
+            // this is the creation of an array of no defined type, eg arrays::create([1, 2, 3], ...)
+            if (func_num_args() <= 2) {
+                // the array has no value type or key type defined, eg arrays::create([1, 2, 3])
+                // or only the value type defined, eg arrays::create([1, 2, 3], "integer")
+                $value_type_args = $arg1;
+                $array_args = self::singleton()->add_array_default_args($value, $value_type_args);
+
+            } else {
+                // the array has a value type and key type defined, eg arrays::create([1, 2, 3], "integer", "natural")
+                $array_args = func_get_args();
+            }
+
         } else {
-            $array_args = func_get_args();
+            // this is the creation of an array of a given type, eg small_int::create([1, 2, 3], ...)
+            if (func_num_args() <= 1) {
+                // the array has no arguments to refine the value type or key type
+                $array_args = func_get_args();
+
+            } else {
+                // the array has new key type arguments, eg small_int::create([1, 2, 3], [0, 10])
+                // note that value type arguments may not be changed
+                $new_key_type_args = func_get_args();
+                array_shift($new_key_type_args);
+                $array_args = self::singleton()->fix_array_args($value, $new_key_type_args);
+            }
         }
 
         $array = call_user_func_array('parent::create', $array_args);
 
         return $array;
-    }
-
-    /**
-     *
-     * @param array $value
-     * @param array $value_type_args
-     * @return array
-     */
-    public function create_array_default_args($value, $value_type_args)
-    {
-        $dimension = $this->calculate_array_dimension($value);
-        $key_type_args = array_fill(0, $dimension, null);
-        array_unshift($key_type_args, $value_type_args);
-        array_unshift($key_type_args, $value);
-
-        return $key_type_args;
     }
 
     public function create_array_types()
@@ -132,7 +152,6 @@ class arrays extends type
             $this->key_types[] = $this->create_new_temp_type($key_type_args);
         }
     }
-
 
     /**
      *
@@ -157,6 +176,43 @@ class arrays extends type
             ";
 
         return $class;
+    }
+
+    /**
+     *
+     * @param array $value
+     * @param array $new_key_type_args
+     * @return array
+     */
+    public function fix_array_args($value, $new_key_type_args)
+    {
+        $key_type_args = $this->fix_key_type_args($new_key_type_args);
+        array_unshift($key_type_args, $this->value_type_args);
+        array_unshift($key_type_args, $value);
+
+        return $key_type_args;
+    }
+
+    /**
+     *
+     * @param array $new_key_type_args
+     * @return array
+     */
+    public function fix_key_type_args($new_key_type_args)
+    {
+        $fixed_key_type_args = [];
+
+        foreach ($this->key_type_args as $index => $key_type_args) {
+            if (isset($new_key_type_args[$index])) {
+                list($key_type_name) = $key_type_args;
+                $key_type_args = (array) $new_key_type_args[$index];
+                array_unshift($key_type_args, $key_type_name);
+            }
+
+            $fixed_key_type_args[] = $key_type_args;
+        }
+
+        return $fixed_key_type_args;
     }
 
     /**

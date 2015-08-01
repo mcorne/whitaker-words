@@ -3,7 +3,6 @@ set_include_path('../php');
 
 require_once 'arrays.php';
 
-$class = arrays::new_type('new_array');
 $class = arrays::new_type('new_array0', 'integer');
 $class = arrays::new_type('new_array1', 'integer', 'integer');
 $class = arrays::new_type('new_array2', 'integer', [0, 5]);
@@ -95,12 +94,21 @@ echo $d->key(1, 1)->value;
 echo "\n";
 echo "\n";
 
+$class = arrays::new_type('new_array', [1, 5], [1, 3]);
+echo $class;
+echo "\n";
+$e = new_array::create([1, 2, 3, 4, 5], [1, 5]); // TODO: fix bad new key args as 5 > 3
+echo $e->class;
+echo "\n";
+echo $e;
+echo "\n";
+
 exit;
 
 //
 
 // must define ranges for keys if undefined
-$a = new_array::create([1, 2, 3, 4, 5], [0, 4]);
+$a = new_array::create([1, 2, 3, 4, 5], [1, 5]);
 
 // as sub type
 $a = new_array1::create(
@@ -112,9 +120,3 @@ $a = new_array1::create(
     [0, 1]  // key type 2 range only
 );
 
-// default interger with subtypes gather from input
-$array = [
-    ['11', '22'],
-    ['33', '33'],
-];
-$a = arrays::create($array);

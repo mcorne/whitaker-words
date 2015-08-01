@@ -199,7 +199,7 @@ class type
     {
         if (func_num_args() > 1) {
             // the value and the object type args are passed, instanciates a temporary type
-            $type = static::create_temp(func_get_args());
+            $type = static::singleton()->create_temp(func_get_args());
 
         } else {
             // the value only is passed, instanciates a new type
@@ -235,10 +235,10 @@ class type
      * @param array $type_args
      * @return object
      */
-    public static function create_temp($type_args)
+    public function create_temp($type_args)
     {
         $value = array_shift($type_args);
-        $temp_type_name = static::singleton()->create_temp_type($type_args);
+        $temp_type_name = $this->create_temp_type($type_args);
         $temp_type = new $temp_type_name($value);
 
         return $temp_type;
