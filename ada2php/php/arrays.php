@@ -47,19 +47,81 @@ class arrays extends type
      */
     public function __get($name)
     {
-        if ($this->is_key_set and ($name == 'value' or $name == 'v')) {
+        if ($name != 'value' and $name != 'v') {
+            // not getting the "value", returns the property value from the parent
+            $value = parent::__get($name);
+
+        } elseif (! $this->is_key_set) {
+            // the key is not set, returns the array data
+            $value = $this->data;
+
+        } elseif (! is_null($value = $this->current_value)) {
+            // the key is set, eg $array->key(123)->value, and the value is not null, returns the value
             $this->is_key_set = false;
 
-            if (is_null($value = $this->current_value) and
-                is_null($value = $this->get_default_value($this->data)))
-            {
-                throw new Exception('The array value has no default value');
-            }
+        } elseif (! is_null($value = $this->get_default_value($this->data))) {
+            // the key is set and has a default value, returns the default value
+            $this->is_key_set = false;
 
-            return $value;
+        } else {
+            throw new Exception('The array value is not defined (null)');
         }
 
-        parent::__get($name);
+        return $value;
+    }
+
+    /**
+     *
+     * @param array $array
+     * @return int
+     */
+    public function calculate_array_dimension($array)
+    {
+        $dimension = 0;
+
+        foreach ((array) $array as $value) {
+            if (is_array($value)) {
+                $dimension = max($dimension, $this->calculate_array_dimension($value));
+            }
+        }
+
+        return $dimension + 1;
+    }
+
+    /**
+     *
+     * @param array $value
+     * @param array $value_type_args
+     * @return object
+     */
+    public static function create($value = null, $value_type_args = null)
+    {
+        if (get_called_class() == __CLASS__ and func_num_args() <= 2) {
+            // this is the creation of an array from this class with no arguments, eg arrays::create([1, 2, 3]);
+            $array_args = self::singleton()->create_array_default_args($value, $value_type_args);
+        } else {
+            $array_args = func_get_args();
+        }
+
+        $array = call_user_func_array('parent::create', $array_args);
+
+        return $array;
+    }
+
+    /**
+     *
+     * @param array $value
+     * @param array $value_type_args
+     * @return array
+     */
+    public function create_array_default_args($value, $value_type_args)
+    {
+        $dimension = $this->calculate_array_dimension($value);
+        $key_type_args = array_fill(0, $dimension, null);
+        array_unshift($key_type_args, $value_type_args);
+        array_unshift($key_type_args, $value);
+
+        return $key_type_args;
     }
 
     public function create_array_types()
@@ -70,6 +132,7 @@ class arrays extends type
             $this->key_types[] = $this->create_new_temp_type($key_type_args);
         }
     }
+
 
     /**
      *
@@ -97,62 +160,36 @@ class arrays extends type
     }
 
     /**
+     * Fixes the type arguments
      *
-     * @param array $key_types_args
-     * @return array
-     */
-    public function fix_key_type_args($key_types_args)
-    {
-        if (! $key_types_args) {
-            $key_type_args[] = ['integer'];
-            return $key_type_args;
-        }
-
-        $fixed = [];
-
-        foreach ($key_types_args as $key_type_args) {
-            $fixed[] = $this->fix_type_args($key_type_args);
-        }
-
-        return $fixed;
-    }
-
-    /**
-     *
-     * @param mixed $type_args
+     * @param array|string $type_args
+     * @param string $default_type
      * @return array
      * @throws Exception
      */
-    public function fix_type_args($type_args)
+    public function fix_type_args($type_args, $default_type)
     {
-        if (is_string($type_args)) {
+        if (is_null($type_args)) {
+            // the type is not defined, default to "natural"
+            $type_args = [$default_type];
+
+        } elseif (is_string($type_args)) {
+            // the type is passed as a string, eg "integer"
+            // converts the string to an array with no range, eg ["integer"]
             $type_args = [$type_args];
 
         } elseif (! is_array($type_args)) {
+            // the type is not an array, it is invalid
             $type_args = $this->convert_to_string($type_args);
             throw new Exception("The array type args are invalid: $type_args");
 
-        } elseif (! is_string($type_args[0])) {
+        } elseif (is_int($type_args[0])) {
+            // the type first argument is an integer, eg [10, 20]
+            // defaults to an integer type, eg ["integer", 10, 20]
             array_unshift($type_args, 'integer');
         }
 
         return $type_args;
-    }
-
-    /**
-     *
-     * @param mixed $value_type_args
-     * @return array
-     */
-    public function fix_value_type_args($value_type_args)
-    {
-        if (is_null($value_type_args)) {
-            $value_type_args = ['integer'];
-        } else {
-            $value_type_args = $this->fix_type_args($value_type_args);
-        }
-
-        return $value_type_args;
     }
 
     /**
@@ -332,11 +369,15 @@ class arrays extends type
      */
     public function validate_type_properties($value_type_args = null)
     {
-        $value_type_args = $this->fix_value_type_args($value_type_args);
+        $array_types_args = func_get_args();
 
-        $key_types_args = func_get_args();
-        array_shift($key_types_args);
-        $key_types_args = $this->fix_key_type_args($key_types_args);
+        $value_type_args = array_shift($array_types_args);
+        $value_type_args = $this->fix_type_args($value_type_args, 'integer');
+
+        do {
+            $key_type_args = array_shift($array_types_args);
+            $key_types_args[] = $this->fix_type_args($key_type_args, 'natural');
+        } while ($array_types_args);
 
         $type_properties = [$value_type_args, $key_types_args];
 

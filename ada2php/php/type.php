@@ -35,6 +35,7 @@ class type
 
     protected static $singletons;
     protected $size;
+    public static $type_classes;
 
     public function __call($name, $args)
     {
@@ -82,7 +83,7 @@ class type
     public function __construct($value = null)
     {
         // unsets properties which may only be accessed via magic methods
-        unset($this->range, $this->value);
+        unset($this->class, $this->range, $this->value);
 
         if (is_null($value)) {
             // there is no value, eg variable declaration, sets the value to null
@@ -99,22 +100,34 @@ class type
      */
     public function __get($name)
     {
-        if ($name == 'value' or $name == 'v') {
-            return $this->data;
+        switch ($name) {
+            case 'class':
+                $type_name = get_class($this);
+                $value = isset(self::$type_classes[$type_name]) ? self::$type_classes[$type_name] : null;
+                break;
+
+            case 'range':
+                if (! isset($this->data_range)) {
+                    $this->data_range = $this->get_range();
+                }
+
+                $value = $this->data_range;
+                break;
+
+            case 'v':
+            case 'value':
+                $value = $this->data;
+                break;
+
+            default:
+                if (! property_exists($this, $name)) {
+                    throw new Exception("The property is undefined: $name.");
+                }
+
+                $value = $this->$name;
         }
 
-        if ($name == 'range') {
-            if (! isset($this->data_range)) {
-                $this->data_range = $this->get_range();
-            }
-            return $this->data_range;
-        }
-
-        if (property_exists($this, $name)) {
-            return $this->$name;
-        }
-
-        throw new Exception("The property is undefined: $name.");
+        return $value;
     }
 
     /**
@@ -275,6 +288,9 @@ class type
         if (eval($type_class) === false) {
             throw new Exception("Cannot eval the type class: $type_name.");
         }
+
+        $type_class = preg_replace('~^ {12}~m', '', $type_class); // removes extra indentations
+        self::$type_classes[$type_name] = $type_class;
 
         return $type_class;
     }

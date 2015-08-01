@@ -82,8 +82,13 @@ $array = [
     ['11', '22'],
     ['33', '44'],
 ];
-// $d = arrays::create($array, 'Integer', [5, 6], [5, 6]);
-$d = arrays::create($array, 'integer', 'natural', 'positive');
+$d = arrays::create($array, 'integer', [5, 6], [5, 6]);
+$d = arrays::create($array, 'integer', 'natural', 'natural');
+$d = arrays::create($array, null, null, null);
+$d = arrays::create($array);
+$d = arrays::create($array, 'integer');
+echo $d->class;
+echo "\n";
 echo $d;
 echo "\n";
 echo $d->key(1, 1)->value;
