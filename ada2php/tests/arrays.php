@@ -4,7 +4,6 @@ set_include_path('../php');
 require_once 'arrays.php';
 
 $class = arrays::new_type('new_array0', 'integer');
-$class = arrays::new_type('new_array1', 'integer', 'integer');
 $class = arrays::new_type('new_array2', 'integer', [0, 5]);
 $class = arrays::new_type('new_array3', 'integer', ['integer', 1, 5]);
 $class = arrays::new_type('new_array4', ['integer', 10, 50], ['integer', 1, 5]);
@@ -94,24 +93,19 @@ echo $d->key(1, 1)->value;
 echo "\n";
 echo "\n";
 
-$class = arrays::new_type('new_array', [1, 5], [1, 3]);
+$class = arrays::new_type('new_array', [1, 100], [10, 20]);
 echo $class;
 echo "\n";
-$e = new_array::create([1, 2, 3, 4, 5], [1, 5]); // TODO: fix bad new key args as 5 > 3
+$e = new_array::create([1, 2, 3, 4, 5], [11, 20]);
 echo $e->class;
 echo "\n";
 echo $e;
 echo "\n";
+echo "\n";
 
-exit;
 
-//
-
-// must define ranges for keys if undefined
-$a = new_array::create([1, 2, 3, 4, 5], [1, 5]);
-
-// as sub type
-$a = new_array1::create(
+$class = arrays::new_type('new_array1', 'integer', 'integer', 'integer');
+$f = new_array1::create(
     [ // values
         1 => [0 => 11, 1 => 22],
         2 => [0 => 33, 1 => 44],
@@ -119,4 +113,8 @@ $a = new_array1::create(
     [1, 2], // key type 1 range only
     [0, 1]  // key type 2 range only
 );
-
+echo $f->class;
+echo "\n";
+echo $f;
+echo "\n";
+echo "\n";

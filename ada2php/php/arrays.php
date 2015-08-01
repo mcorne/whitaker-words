@@ -135,7 +135,7 @@ class arrays extends type
                 // note that value type arguments may not be changed
                 $new_key_type_args = func_get_args();
                 array_shift($new_key_type_args);
-                $array_args = self::singleton()->fix_array_args($value, $new_key_type_args);
+                $array_args = static::singleton()->fix_array_args($value, $new_key_type_args);
             }
         }
 
@@ -206,6 +206,7 @@ class arrays extends type
             if (isset($new_key_type_args[$index])) {
                 list($key_type_name) = $key_type_args;
                 $key_type_args = (array) $new_key_type_args[$index];
+                call_user_func_array([$this->key_types[$index], 'validate_type_properties'], $key_type_args);
                 array_unshift($key_type_args, $key_type_name);
             }
 
