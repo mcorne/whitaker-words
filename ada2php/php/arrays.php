@@ -158,7 +158,7 @@ class arrays extends type
      * @param string $type_name
      * @return string
      */
-    public function create_type_class($parent_type_name, $type_name, $value_type_args = null, $key_types_args = null)
+    public function create_type_class($parent_type_name, $type_name, $value_type_args, $key_types_args)
     {
         $exported_value_type_args = var_export($value_type_args, true);
         $exported_key_type_args   = var_export($key_types_args, true);

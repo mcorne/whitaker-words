@@ -105,6 +105,8 @@ echo "\n";
 
 
 $class = arrays::new_type('new_array1', 'integer', 'integer', 'integer');
+echo type::$type_classes['new_array1'];
+echo "\n";
 $f = new_array1::create(
     [ // values
         1 => [0 => 11, 1 => 22],

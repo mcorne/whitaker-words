@@ -4,4 +4,5 @@ return [
     'character'   => ['enumeration', range("\x00", "\xFF")],
     'natural'     => ['integer', 0],
     'positive'    => ['integer', 1],
+    'string'      => ['arrays', 'character', 'positive'],
 ];

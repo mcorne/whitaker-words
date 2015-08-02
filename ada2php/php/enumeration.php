@@ -17,21 +17,21 @@ class enumeration extends type
      * @param array $indexes
      * @return string
      */
-    public function create_type_class($parent_type_name, $type_name, $first = null, $last = null, $values = null, $indexes = null)
+    public function create_type_class($parent_type_name, $type_name, $first, $last, $values, $indexes)
     {
-        $exported_values  = var_export($values, true);
+        $exported_first   = var_export($first  , true);
         $exported_indexes = var_export($indexes, true);
-        $first = addslashes($first);
-        $last  = addslashes($last);
+        $exported_last    = var_export($last   , true);
+        $exported_values  = var_export($values , true);
 
         $size  = $this->count_significant_bits(end($indexes));
 
         $class = "
             class $type_name extends $parent_type_name
             {
-                protected \$first   = '$first';
+                protected \$first   = $exported_first;
                 protected \$indexes = $exported_indexes;
-                protected \$last    = '$last';
+                protected \$last    = $exported_last;
                 protected \$size    = $size;
                 protected \$values  = $exported_values;
             }
@@ -48,11 +48,10 @@ class enumeration extends type
      */
     public function extract_sub_range_values($first, $last)
     {
-        $first_index = $this->indexes[$first];
-        $last_index  = $this->indexes[$last];
-        $length = $last_index - $first_index + 1;
-        $values  = array_slice($this->values , $first_index, $length, true);
-        $indexes = array_slice($this->indexes, $first_index, $length, true);
+        $offset = $this->indexes[$first] - current($this->indexes);
+        $length = $this->indexes[$last] - $this->indexes[$first] + 1;
+        $values  = array_slice($this->values , $offset, $length, true);
+        $indexes = array_slice($this->indexes, $offset, $length, true);
 
         return [$values, $indexes];
     }
@@ -66,7 +65,7 @@ class enumeration extends type
      * @param int $last
      * @return string
      */
-    public function filter_and_validate_enumeration($values = null)
+    public function filter_and_validate_enumeration($values)
     {
         if (! is_array($values)) {
             $values = $this->convert_to_string($values);
@@ -192,8 +191,9 @@ class enumeration extends type
 
         } else {
             // this is a subset of an existing enumeration
-            $first = $arg1;
-            $last  = $arg2;
+            // defaults the first or last value to the parent's
+            $first = is_null($arg1) ? $this->first : $arg1;
+            $last  = is_null($arg2) ? $this->last  : $arg2;
             $this->is_valid_range($first, $last);
             list($values, $indexes) = $this->extract_sub_range_values($first, $last);
         }

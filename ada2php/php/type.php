@@ -237,6 +237,11 @@ class type
         $this->load_type_dynamic($parent_type_name);
         $parent_type = new $parent_type_name();
 
+        if (! $type_args) {
+            // there is no argument, returns the parent itself
+            return $parent_type;
+        }
+
         $temp_type_name = $this->create_temp_type_name();
         $parent_type->create_type($temp_type_name, $type_args);
 
@@ -482,33 +487,6 @@ class type
         }
 
         return false;
-    }
-
-    /**
-     * Validates the type range properties
-     *
-     * @param mixed $first
-     * @param mixed $last
-     * @return array
-     * @throws Exception
-     */
-    public function validate_type_range_properties($first = null, $last = null)
-    {
-        if (! is_null($first)) {
-            $first = $this->validate_value($first);
-        }
-
-        if (! is_null($last)) {
-            $last = $this->validate_value($last);
-        }
-
-        if (! is_null($first) and ! is_null($last) and $first > $last) {
-            throw new Exception("The first value is greater than the second one: $first > $last.");
-        }
-
-        $type_properties = [$first, $last];
-
-        return $type_properties;
     }
 
     /**

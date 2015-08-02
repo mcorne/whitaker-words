@@ -64,3 +64,18 @@ echo "\n";
 print_r(mid_week::range());
 echo "\n";
 echo "\n";
+
+mid_week::new_type('mid_week2');
+$c = mid_week2::create('tue');
+echo $c->class;
+echo "\n";
+print_r(mid_week2::range());
+echo "\n";
+echo "\n";
+
+mid_week::new_type('mid_week3', 'wed');
+$d = mid_week3::create('wed');
+echo $d->class;
+echo "\n";
+print_r(mid_week3::range());
+echo "\n";

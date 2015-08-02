@@ -12,7 +12,7 @@ class float extends type
      * @param int $last
      * @return string
      */
-    public function create_type_class($parent_type_name, $type_name, $first = null, $last = null)
+    public function create_type_class($parent_type_name, $type_name, $first, $last)
     {
         $first = is_null($first) ? 'null' : $first;
         $last  = is_null($last)  ? 'null' : $last;
@@ -62,7 +62,19 @@ class float extends type
      */
     public function validate_type_properties($first = null, $last = null)
     {
-        $type_properties = $this->validate_type_range_properties($first, $last);
+        if (! is_null($first)) {
+            $first = $this->validate_value($first);
+        }
+
+        if (! is_null($last)) {
+            $last = $this->validate_value($last);
+        }
+
+        if (! is_null($first) and ! is_null($last) and $first > $last) {
+            throw new Exception("The first value is greater than the second one: $first > $last.");
+        }
+
+        $type_properties = [$first, $last];
 
         return $type_properties;
     }

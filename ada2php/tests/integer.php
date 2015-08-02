@@ -9,10 +9,24 @@ echo "\n";
 $class = integer::new_type('variant_type', 0, 9);
 echo $class;
 echo "\n";
+echo "\n";
 
 $a = which_type::create(1);
 $b = which_type::create(3);
+
 $c = integer::create(7, 0, 9);
+echo get_class($c);
+echo "\n";
+echo $c->class;
+echo "\n";
+echo "\n";
+
+$c = integer::create(7);
+echo get_class($c);
+echo "\n";
+echo $c->class;
+echo "\n";
+echo "\n";
 
 // $d = which_type::create();
 $d = integer::create(null, 0, 11);
@@ -23,6 +37,7 @@ echo "\n";
 which_type::new_type('which_sub_type', 0, 8);
 $e = which_sub_type::create(8);
 echo $e;
+echo "\n";
 echo "\n";
 
 // $e->value = null;
@@ -36,22 +51,26 @@ echo "\n";
 $f->v = $a;
 echo $f;
 echo "\n";
+echo "\n";
 
 $method = 'integer::new_type';
 call_user_func($method, 'natural', 0);
 $g = natural::create(11);
 echo $g;
 echo "\n";
+echo "\n";
 
 type::load_type('positive');
 $h = positive::create(22);
 echo $h;
+echo "\n";
 echo "\n";
 
 $i = positive::constant('3_322');
 echo $i;
 echo "\n";
 echo $i->is_constant;
+echo "\n";
 echo "\n";
 // $i->value = 456;
 
@@ -81,6 +100,7 @@ echo "\n";
 echo bug_range::pred(10);
 echo "\n";
 echo bug_range::succ(10);
+echo "\n";
 echo "\n";
 
 $class = integer::new_type('integer2');

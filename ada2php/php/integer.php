@@ -38,16 +38,8 @@ class integer extends type
      * @param int $last
      * @return string
      */
-    public function create_type_class($parent_type_name, $type_name, $first = null, $last = null)
+    public function create_type_class($parent_type_name, $type_name, $first, $last)
     {
-        if (is_null($first)) {
-            $first = $this->first;
-        }
-
-        if (is_null($last)) {
-            $last = $this->last;
-        }
-
         $size  = $this->calculate_size_in_bits($first, $last);
 
         $class = "
@@ -182,7 +174,14 @@ class integer extends type
      */
     public function validate_type_properties($first = null, $last = null)
     {
-        $type_properties = $this->validate_type_range_properties($first, $last);
+        $first = is_null($first) ? $this->first : $this->validate_value($first);
+        $last  = is_null($last)  ? $this->last  : $this->validate_value($last);
+
+        if ($first > $last) {
+            throw new Exception("The first value is greater than the second one: $first > $last.");
+        }
+
+        $type_properties = [$first, $last];
 
         return $type_properties;
     }
