@@ -189,6 +189,22 @@ class type
     }
 
     /**
+     * Counts the number of significant bits of a positive integer
+     *
+     * @param int $positive
+     * @return int
+     * @todo fix to return the same size as ADA, eg 258 needs 9 bits vs 10 in ADA
+     */
+    public function count_significant_bits($positive)
+    {
+        $binary = decbin($positive);
+        $left_trimmed = ltrim($binary, '0');
+        $significant_bit_count = strlen($left_trimmed);
+
+        return $significant_bit_count;
+    }
+
+    /**
      *
      * @param mixed $value
      * @param mixed $arg1

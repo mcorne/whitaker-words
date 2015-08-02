@@ -24,12 +24,15 @@ class enumeration extends type
         $first = addslashes($first);
         $last  = addslashes($last);
 
+        $size  = $this->count_significant_bits(end($indexes));
+
         $class = "
             class $type_name extends $parent_type_name
             {
                 protected \$first   = '$first';
                 protected \$indexes = $exported_indexes;
                 protected \$last    = '$last';
+                protected \$size    = $size;
                 protected \$values  = $exported_values;
             }
             ";
