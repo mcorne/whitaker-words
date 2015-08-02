@@ -9,3 +9,4 @@ echo $a->class;
 echo "\n";
 echo $a;
 echo "\n";
+
