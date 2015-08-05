@@ -3,6 +3,20 @@ require_once 'file.php';
 
 class inflection
 {
+    public $adjective_inflection_keys = [
+        'which',
+        'variant',
+        'case',
+        'number',
+        'gender',
+        'comparison',
+        'stem_key',
+        'ending_size',
+        'ending',
+        'age',
+        'frequency',
+    ];
+
     public $adverb_inflection_keys = [
         'comparison',
         'stem_key',
@@ -170,7 +184,33 @@ class inflection
 
     public $stem_key_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+
+    public $tense_type = [
+        'X',    // all, none, or unknown
+        'PRES', // PRESent
+        'IMPF', // IMPerFect
+        'FUT',  // FUTure
+        'PERF', // PERFect
+        'PLUP', // PLUPerfect
+        'FUTP', // FUTure Perfect
+    ];
+
     public $variant_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    public $verb_inflection_keys = [
+        'which',
+        'variant',
+        'tense',
+        'voice',
+        'mood',
+        'person',
+        'number',
+        'stem_key',
+        'ending_size',
+        'ending',
+        'age',
+        'frequency',
+    ];
 
     public $verb_type = [
         'X',        // all, none, or unknown
@@ -200,14 +240,6 @@ class inflection
     public $which_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     ///
-
-    public $adjective_inflection_keys = [
-        'DECL'   => 'decn_record'     ,
-        'CS'     => ['case_type'      , 'X'],
-        'NUMBER' => ['number_type'    , 'X'],
-        'GENDER' => ['gender_type'    , 'X'],
-        'CO'     => ['comparison_type', 'X'],
-    ];
 
     public $decn_inflection_keys = [
         'WHICH' => ['which_type'  , 0],
@@ -265,13 +297,6 @@ class inflection
         'MOOD'  => 'X', // MOOD_TYPE
     ];
 
-    public $verb_inflection_keys = [
-        'CON'              => 'decn_record'            ,
-        'TENSE_VOICE_MOOD' => 'tense_voice_mood_record',
-        'PERSON'           => ['person_type'           , 0],
-        'NUMBER'           => ['number_type'           , 'X'],
-    ];
-
     public $vpar_inflection_keys = [
         'CON'              => 'decn_record'            ,
         'CS'               => ['case_type'             , 'X'],
@@ -297,14 +322,19 @@ class inflection
         }
     }
 
+    public function load_inflections()
+    {
+        $file = new file();
+        $lines = $file->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
+        $inflections = $this->parse_inflections($lines);
+
+        return $inflections;
+    }
+
     public function parse_inflection($line, $line_number)
     {
-        $inflection_values = preg_split('~ +~', $line, null, PREG_SPLIT_NO_EMPTY);
-        $part_of_speech = array_shift($inflection_values);
 
-        if (! isset($this->parts_of_speech[$part_of_speech])) {
-            throw new Exception("Error line #$line_number! Invalid part of speech: $part_of_speech.");
-        }
+        list($inflection_values, $part_of_speech) = $this->split_inflection($line, $line_number);
 
         $inflection_keys_property = $this->parts_of_speech[$part_of_speech] . '_inflection_keys';
         $inflection_keys = $this->$inflection_keys_property;
@@ -319,41 +349,12 @@ class inflection
             }
 
             $inflection_key = $inflection_keys[$index];
-
-            if ($inflection_key == 'ending') {
-                if (empty($parsed['ending_size'])) {
-                    $inflection_value = null;
-                    $value_count++;
-
-                } elseif ($parsed['ending_size'] != strlen($inflection_value)) {
-                        throw new Exception("Error line #$line_number! Ending and size do not match.");
-                }
-
-            } else {
-                $property = $inflection_key . '_type';
-
-                if (! isset($this->$property)) {
-                    throw new Exception("Invalid property: $property");
-                }
-
-                $valid_inflection_values = $this->$property;
-
-                if (!isset($valid_inflection_values[$inflection_value])) {
-                    throw new Exception("Error line #$line_number! Invalid key value: $inflection_key => $inflection_value.");
-                }
-            }
-
+            $ending_size = empty($parsed['ending_size']) ? 0 : $parsed['ending_size'];
+            list($inflection_value, $value_count) = $this->validate_inflection_value($inflection_key, $inflection_value, $ending_size, $value_count, $line_number);
             $parsed[$inflection_key] = $inflection_value;
         }
 
-        $missing_count = count($inflection_keys) - $value_count;
-
-        if ($missing_count > 0) {
-            throw new Exception("Error line #$line_number! $missing_count missing value(s).");
-        } elseif ($missing_count < 0) {
-            $missing_count = -$missing_count;
-            throw new Exception("Error line #$line_number! $missing_count unexpected values(s).");
-        }
+        $this->validate_inflection_value_count($inflection_keys, $value_count, $line_number);
 
         $parsed['line_number'] = $line_number;
 
@@ -379,12 +380,57 @@ class inflection
         return $inflections;
     }
 
-    public function load_inflections()
+    public function split_inflection($line, $line_number)
     {
-        $file = new file();
-        $lines = $file->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
-        $inflections = $this->parse_inflections($lines);
+        $inflection_values = preg_split('~ +~', $line, null, PREG_SPLIT_NO_EMPTY);
+        $part_of_speech = array_shift($inflection_values);
 
-        return $inflections;
+        if (! isset($this->parts_of_speech[$part_of_speech])) {
+            throw new Exception("Error line #$line_number! Invalid part of speech: $part_of_speech.");
+        }
+
+        return [$inflection_values, $part_of_speech];
+    }
+
+    public function validate_inflection_value($inflection_key, $inflection_value, $ending_size, $value_count, $line_number)
+    {
+        if ($inflection_key == 'ending') {
+            if (empty($ending_size)) {
+                $inflection_value = null;
+                $value_count++;
+
+            } elseif ($ending_size != strlen($inflection_value)) {
+                throw new Exception("Error line #$line_number! Ending and size do not match.");
+            }
+
+        } else {
+            $property = $inflection_key . '_type';
+
+            if (! isset($this->$property)) {
+                throw new Exception("Invalid property: $property");
+            }
+
+            $valid_inflection_values = $this->$property;
+
+            if (!isset($valid_inflection_values[$inflection_value])) {
+                throw new Exception("Error line #$line_number! Invalid key value: $inflection_key => $inflection_value.");
+            }
+        }
+
+        return [$inflection_value, $value_count];
+    }
+
+    public function validate_inflection_value_count($inflection_keys, $value_count, $line_number)
+    {
+        $missing_count = count($inflection_keys) - $value_count;
+
+        if ($missing_count > 0) {
+            throw new Exception("Error line #$line_number! $missing_count missing value(s).");
+        }
+
+        if ($missing_count < 0) {
+            $missing_count = -$missing_count;
+            throw new Exception("Error line #$line_number! $missing_count unexpected values(s).");
+        }
     }
 }
