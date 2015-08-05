@@ -23,11 +23,29 @@ class inflection
         'H', // modern      --  Coined recently, words for new things (19-20)
     ];
 
+    public $case_type = [
+        'X',   // all, none, or unknown
+        'NOM', // NOMinative
+        'VOC', // VOCative
+        'GEN', // GENitive
+        'LOC', // LOCative
+        'DAT', // DATive
+        'ABL', // ABLative
+        'ACC', // ACCusitive
+    ];
+
     public $comparison_type = [
         'X',     // all, none, or unknown
         'POS',   // POSitive
         'COMP',  // COMParative
         'SUPER', // SUPERlative
+    ];
+
+    public $conjunction_inflection_keys = [
+        'stem_key',
+        'ending_size',
+        'age',
+        'frequency',
     ];
 
     public $ending_size_type = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -45,40 +63,6 @@ class inflection
         'N', // Pliny       --  Things that appear (almost) only in Pliny Natural History
     ];
 
-    public $stem_key_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-    ///
-
-    public $adjective_record = [
-        'DECL'   => 'decn_record'     ,
-        'CS'     => ['case_type'      , 'X'],
-        'NUMBER' => ['number_type'    , 'X'],
-        'GENDER' => ['gender_type'    , 'X'],
-        'CO'     => ['comparison_type', 'X'],
-    ];
-
-    public $adverb_record = [
-        'CO'     => ['comparison_type', 'X'],
-    ];
-
-    public $case_type = [
-        'X',   // all, none, or unknown
-        'NOM', // NOMinative
-        'VOC', // VOCative
-        'GEN', // GENitive
-        'LOC', // LOCative
-        'DAT', // DATive
-        'ABL', // ABLative
-        'ACC', // ACCusitive
-    ];
-
-    public $conjunction_record = [];
-
-    public $decn_record = [
-        'WHICH' => ['which_type'  , 0],
-        'VAR'   => ['variant_type', 0],
-    ];
-
     public $gender_type = [
         'X', // all, none, or unknown
         'M', // Masculine
@@ -87,15 +71,12 @@ class inflection
         'C', // Common (masculine and/or feminine)
     ];
 
-    public $inflection_record = [
-        'QUAL'   => 'quality_record' ,
-        'KEY'    => ['stem_key_type' , 0],
-        'ENDING' => 'ending_record'  ,
-        'AGE'    => ['age_type'      , 'X'],
-        'FREQ'   => ['frequency_type', 'X'],
+    public $interjection_inflection_keys = [
+        'stem_key',
+        'ending_size',
+        'age',
+        'frequency',
     ];
-
-    public $interjection_record = [];
 
     public $mood_type = [
         'X',   // all, none, or unknown
@@ -106,7 +87,20 @@ class inflection
         'PPL', // ParticiPLe
     ];
 
-    public $noun_kind_type = [
+    public $noun_inflection_keys = [
+        'which',
+        'variant',
+        'case',
+        'number',
+        'gender',
+        'stem_key',
+        'ending_size',
+        'ending',
+        'age',
+        'frequency',
+    ];
+
+    public $noun_type = [
         'X', // unknown, nondescript
         'S', // Singular "only"           --  not really used
         'M', // plural or Multiple "only" --  not really used
@@ -119,25 +113,10 @@ class inflection
         'W', // a place Where
     ];
 
-    public $noun_record = [
-        'DECL'   => 'decn_record' ,
-        'CS'     => ['case_type'  , 'X'],
-        'NUMBER' => ['number_type', 'X'],
-        'GENDER' => ['gender_type', 'X'],
-    ];
-
     public $number_type = [
         'X', // all, none, or unknown
         'S', // Singular
         'P', // Plural
-    ];
-
-    public $numeral_record = [
-        'DECL'   => 'decn_record'       ,
-        'CS'     => ['case_type'        , 'X'],
-        'NUMBER' => ['number_type'      , 'X'],
-        'GENDER' => ['gender_type'      , 'X'],
-        'SORT'   => ['numeral_sort_type', 'X'],
     ];
 
     public $numeral_sort_type = [
@@ -157,45 +136,28 @@ class inflection
         'INTERJ' => 'interjection',
         'N'      => 'noun',
         'NUM'    => 'numeral',
-        'PACK'   => 'propack',
-        'PREFIX' => 'prefix',
+        'PACK'   => 'propack',        // artificial for code
+        'PREFIX' => 'prefix',         // artificial for code
         'PREP'   => 'preposition',
         'PRON'   => 'pronoun',
-        'SUFFIX' => 'suffix',
+        'SUFFIX' => 'suffix',         // artificial for code
         'SUPINE' => 'supine',
-        'TACKON' => 'tackon',
+        'TACKON' => 'tackon',         // artificial for code
         'V'      => 'verb',
-        'VPAR'   => 'vpar',
-    ];
-
-    public $part_of_speech_type = [
-        'X',      // all, none, or unknown
-        'N',      // Noun
-        'PRON',   // PRONoun
-        'PACK',   // PACKON -- artificial for code
-        'ADJ',    // ADJective
-        'NUM',    // NUMeral
-        'ADV',    // ADVerb
-        'V',      // Verb
-        'VPAR',   // Verb PARticiple
-        'SUPINE', // SUPINE
-        'PREP',   // PREPosition
-        'CONJ',   // CONJunction
-        'INTERJ', // INTERJection
-        'TACKON', // TACKON -- artificial for code
-        'PREFIX', // PREFIX -- here artificial for code
-        'SUFFIX', // SUFFIX -- here artificial for code
+        'VPAR'   => 'verb_participle',
     ];
 
     public $person_type = [0, 1, 2, 3];
 
-    public $prefix_record = [];
-
-    public $preposition_record = [
-        'OBJ' => ['case_type', 'X'],
+    public $preposition_inflection_keys = [
+        'case',
+        'stem_key',
+        'ending_size',
+        'age',
+        'frequency',
     ];
 
-    public $pronoun_kind_type = [
+    public $pronoun_type = [
         'X',      // unknown, nondescript
         'PERS',   // PERSonal
         'REL',    // RELative
@@ -206,58 +168,11 @@ class inflection
         'ADJECT', // ADJECTival
     ];
 
-    public $pronoun_record = [
-        'DECL'   => 'decn_record' ,
-        'CS'     => ['case_type'  , 'X'],
-        'NUMBER' => ['number_type', 'X'],
-        'GENDER' => ['gender_type', 'X'],
-    ];
-
-    public $propack_record = [
-        'DECL'   => 'decn_record' ,
-        'CS'     => ['case_type'  , 'X'],
-        'NUMBER' => ['number_type', 'X'],
-        'GENDER' => ['gender_type', 'X'],
-    ];
-
-    public $quality_record_case = [
-        'ADJ'    => 'adjective_record',
-        'ADV'    => 'adverb_record',
-        'CONJ'   => 'conjunction_record',
-        'INTERJ' => 'interjection_record',
-        'N'      => 'noun_record',
-        'NUM'    => 'numeral_record',
-        'PACK'   => 'propack_record',
-        'PREFIX' => 'prefix_record',
-        'PREP'   => 'preposition_record',
-        'PRON'   => 'pronoun_record',
-        'SUFFIX' => 'suffix_record',
-        'SUPINE' => 'supine_record',
-        'TACKON' => 'tackon_record',
-        'V'      => 'verb_record',
-        'VPAR'   => 'vpar_record',
-    ];
-
-    public $suffix_record = [];
-
-    public $supine_record = [
-        'CON'              => 'decn_record' ,
-        'CS'               => ['case_type'  , 'X'],
-        'NUMBER'           => ['number_type', 'X'],
-        'GENDER'           => ['gender_type', 'X'],
-    ];
-
-    public $tackon_record = [];
-
-    public $tense_voice_mood_record = [
-        'TENSE' => 'X', // TENSE_TYPE
-        'VOICE' => 'X', // VOICE_TYPE
-        'MOOD'  => 'X', // MOOD_TYPE
-    ];
+    public $stem_key_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     public $variant_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    public $verb_kind_type = [
+    public $verb_type = [
         'X',        // all, none, or unknown
         'TO_BE',    // only the verb TO BE (esse)
         'TO_BEING', // compounds of the verb to be (esse)
@@ -276,28 +191,94 @@ class inflection
                     // having only perfect stem, but with present force
     ];
 
-    public $verb_record = [
-        'CON'              => 'decn_record'            ,
-        'TENSE_VOICE_MOOD' => 'tense_voice_mood_record',
-        'PERSON'           => ['person_type'           , 0],
-        'NUMBER'           => ['number_type'           , 'X'],
-    ];
-
     public $voice_type = [
         'X',       // all, none, or unknown
         'ACTIVE',  // ACTIVE
         'PASSIVE', // PASSIVE
     ];
 
-    public $vpar_record = [
+    public $which_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    ///
+
+    public $adjective_inflection_keys = [
+        'DECL'   => 'decn_record'     ,
+        'CS'     => ['case_type'      , 'X'],
+        'NUMBER' => ['number_type'    , 'X'],
+        'GENDER' => ['gender_type'    , 'X'],
+        'CO'     => ['comparison_type', 'X'],
+    ];
+
+    public $decn_inflection_keys = [
+        'WHICH' => ['which_type'  , 0],
+        'VAR'   => ['variant_type', 0],
+    ];
+
+    public $inflection_inflection_keys = [
+        'QUAL'   => 'quality_record' ,
+        'KEY'    => ['stem_key_type' , 0],
+        'ENDING' => 'ending_record'  ,
+        'AGE'    => ['age_type'      , 'X'],
+        'FREQ'   => ['frequency_type', 'X'],
+    ];
+
+    public $numeral_inflection_keys = [
+        'DECL'   => 'decn_record'       ,
+        'CS'     => ['case_type'        , 'X'],
+        'NUMBER' => ['number_type'      , 'X'],
+        'GENDER' => ['gender_type'      , 'X'],
+        'SORT'   => ['numeral_sort_type', 'X'],
+    ];
+
+    public $prefix_inflection_keys = [];
+
+    public $pronoun_inflection_keys = [
+        'which',
+        'variant',
+        'case',
+        'number',
+        'gender',
+    ];
+
+    public $propack_inflection_keys = [
+        'which',
+        'variant',
+        'case',
+        'number',
+        'gender',
+    ];
+
+    public $suffix_inflection_keys = [];
+
+    public $supine_inflection_keys = [
+        'CON'              => 'decn_record' ,
+        'CS'               => ['case_type'  , 'X'],
+        'NUMBER'           => ['number_type', 'X'],
+        'GENDER'           => ['gender_type', 'X'],
+    ];
+
+    public $tackon_inflection_keys = [];
+
+    public $tense_voice_mood_inflection_keys = [
+        'TENSE' => 'X', // TENSE_TYPE
+        'VOICE' => 'X', // VOICE_TYPE
+        'MOOD'  => 'X', // MOOD_TYPE
+    ];
+
+    public $verb_inflection_keys = [
+        'CON'              => 'decn_record'            ,
+        'TENSE_VOICE_MOOD' => 'tense_voice_mood_record',
+        'PERSON'           => ['person_type'           , 0],
+        'NUMBER'           => ['number_type'           , 'X'],
+    ];
+
+    public $vpar_inflection_keys = [
         'CON'              => 'decn_record'            ,
         'CS'               => ['case_type'             , 'X'],
         'NUMBER'           => ['number_type'           , 'X'],
         'GENDER'           => ['gender_type'           , 'X'],
         'TENSE_VOICE_MODD' => 'tense_voice_mood_record',
     ];
-
-    public $which_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     public function __construct()
     {
@@ -316,38 +297,65 @@ class inflection
         }
     }
 
-    public function parse_inflection($line, $number)
+    public function parse_inflection($line, $line_number)
     {
         $inflection_values = preg_split('~ +~', $line, null, PREG_SPLIT_NO_EMPTY);
         $part_of_speech = array_shift($inflection_values);
 
         if (! isset($this->parts_of_speech[$part_of_speech])) {
-            throw new Exception("Error line #$number! Invalid part of speech: $part_of_speech.");
+            throw new Exception("Error line #$line_number! Invalid part of speech: $part_of_speech.");
         }
 
-        $inflection_keys = $this->parts_of_speech[$part_of_speech] . '_inflection_keys';
+        $inflection_keys_property = $this->parts_of_speech[$part_of_speech] . '_inflection_keys';
+        $inflection_keys = $this->$inflection_keys_property;
 
-        if (count($inflection_values) != count($this->$inflection_keys)) {
-            throw new Exception("Error line #$number! Inflection keys and values do not match.");
-        }
+        $value_count = count($inflection_values);
 
         $parsed['part_of_speech'] = $part_of_speech;
 
-        foreach ($this->$inflection_keys as $index => $inflection_key) {
-            $property = $inflection_key . '_type';
-
-            if (! isset($this->$property)) {
-                throw new Exception("Invalid property: $property");
+        foreach ($inflection_values as $index => $inflection_value) {
+            if (! isset($inflection_keys[$index])) {
+                throw new Exception("Error line #$line_number! Unexpected value: $inflection_value.");
             }
 
-            $inflection_value = $inflection_values[$index];
+            $inflection_key = $inflection_keys[$index];
 
-            if (! array_key_exists($inflection_value, $this->$property)) {
-                throw new Exception("Error line #$number! Invalid key value: $inflection_key => $inflection_value.");
+            if ($inflection_key == 'ending') {
+                if (empty($parsed['ending_size'])) {
+                    $inflection_value = null;
+                    $value_count++;
+
+                } elseif ($parsed['ending_size'] != strlen($inflection_value)) {
+                        throw new Exception("Error line #$line_number! Ending and size do not match.");
+                }
+
+            } else {
+                $property = $inflection_key . '_type';
+
+                if (! isset($this->$property)) {
+                    throw new Exception("Invalid property: $property");
+                }
+
+                $valid_inflection_values = $this->$property;
+
+                if (!isset($valid_inflection_values[$inflection_value])) {
+                    throw new Exception("Error line #$line_number! Invalid key value: $inflection_key => $inflection_value.");
+                }
             }
 
             $parsed[$inflection_key] = $inflection_value;
         }
+
+        $missing_count = count($inflection_keys) - $value_count;
+
+        if ($missing_count > 0) {
+            throw new Exception("Error line #$line_number! $missing_count missing value(s).");
+        } elseif ($missing_count < 0) {
+            $missing_count = -$missing_count;
+            throw new Exception("Error line #$line_number! $missing_count unexpected values(s).");
+        }
+
+        $parsed['line_number'] = $line_number;
 
         return $parsed;
     }
@@ -363,11 +371,12 @@ class inflection
                 continue;
             }
 
-            $number = $index + 1;
-            $inflection = $this->parse_inflection($line, $number);
+            $line_number = $index + 1;
+            $inflections[] = $this->parse_inflection($line, $line_number);
+            break; // TODO: remove
         }
 
-        return $inflection;
+        return $inflections;
     }
 
     public function load_inflections()
@@ -375,5 +384,7 @@ class inflection
         $file = new file();
         $lines = $file->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
         $inflections = $this->parse_inflections($lines);
+
+        return $inflections;
     }
 }
