@@ -323,29 +323,46 @@ class inflection extends common
             VACUUM;
 
             CREATE TABLE inflection (
-                id            INTEGER PRIMARY KEY AUTOINCREMENT,
-                part_of_seech TEXT NOT NULL,
-                which         INTEGER,
-                variant       INTEGER,
-                cases         TEXT,
-                number        TEXT,
-                gender        TEXT,
-                comparison    TEXT,
-                numeral_sort  TEXT,
-                tense         TEXT,
-                voice         TEXT,
-                mood          TEXT,
-                person        INTEGER,
-                stem_key      INTEGER NOT NULL,
-                ending_size   INTEGER NOT NULL,
-                ending        TEXT,
-                age           TEXT NOT NULL,
-                frequency     TEXT NOT NULL,
-                line_number   INTEGER NOT NULL
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                part_of_speech TEXT NOT NULL,
+                which          INTEGER,
+                variant        INTEGER,
+                cases          TEXT,
+                number         TEXT,
+                gender         TEXT,
+                comparison     TEXT,
+                numeral_sort   TEXT,
+                tense          TEXT,
+                voice          TEXT,
+                mood           TEXT,
+                person         INTEGER,
+                stem_key       INTEGER NOT NULL,
+                ending_size    INTEGER NOT NULL,
+                ending         TEXT,
+                age            TEXT NOT NULL,
+                frequency      TEXT NOT NULL,
+                line_number    INTEGER NOT NULL
             );
         ';
 
         $this->pdo->exec($sql);
+    }
+
+    public function insert_inflection($inflection)
+    {
+        $colums = implode(',', array_keys($inflection));
+        $values = array_map([$this->pdo, 'quote'], array_values($inflection));
+        $values = implode(',', $values);
+        $sql = "INSERT INTO inflection ($colums) VALUES ($values)";
+
+        $this->pdo->exec($sql);
+    }
+
+    public function insert_inflections($inflections)
+    {
+        $this->pdo->exec('BEGIN TRANSACTION');
+        array_map([$this, 'insert_inflection'], $inflections);
+        $this->pdo->exec('COMMIT TRANSACTION');
     }
 
     public function load_inflections($lines = null)
@@ -356,6 +373,7 @@ class inflection extends common
 
         $inflections = $this->parse_inflections($lines);
         $this->create_inflection_table();
+        $this->insert_inflections($inflections);
 
         return $inflections;
     }
