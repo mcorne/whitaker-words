@@ -3,7 +3,11 @@ require_once 'file.php';
 
 class inflection
 {
-    public $adjective_inflection_keys = [
+    /**
+     * eg "ADJ 1 1 NOM S M POS 1 2 us X A"
+     * @var array
+     */
+    public $adjective_attributes = [
         'which',
         'variant',
         'case',
@@ -17,7 +21,11 @@ class inflection
         'frequency',
     ];
 
-    public $adverb_inflection_keys = [
+    /**
+     * eg "ADV POS 1 0 X A"
+     * @var array
+     */
+    public $adverb_attributes = [
         'comparison',
         'stem_key',
         'ending_size',
@@ -55,7 +63,11 @@ class inflection
         'SUPER', // SUPERlative
     ];
 
-    public $conjunction_inflection_keys = [
+    /**
+     * eg "CONJ 1 0 X A"
+     * @var array
+     */
+    public $conjunction_attributes = [
         'stem_key',
         'ending_size',
         'age',
@@ -85,12 +97,18 @@ class inflection
         'C', // Common (masculine and/or feminine)
     ];
 
-    public $interjection_inflection_keys = [
+    /**
+     * eg "INTERJ 1 0 X A"
+     * @var array
+     */
+    public $interjection_attributes = [
         'stem_key',
         'ending_size',
         'age',
         'frequency',
     ];
+
+    public $line_number;
 
     public $mood_type = [
         'X',   // all, none, or unknown
@@ -101,7 +119,11 @@ class inflection
         'PPL', // ParticiPLe
     ];
 
-    public $noun_inflection_keys = [
+    /**
+     * eg "N 1 1 NOM S C  1 1 a X A"
+     * @var array
+     */
+    public $noun_attributes = [
         'which',
         'variant',
         'case',
@@ -133,6 +155,24 @@ class inflection
         'P', // Plural
     ];
 
+    /**
+     * eg "NUM 1 1 NOM S M CARD 1 2 us X A"
+     * @var array
+     */
+    public $numeral_attributes = [
+        'which',
+        'variant',
+        'case',
+        'number',
+        'gender',
+        'numeral_sort',
+        'stem_key',
+        'ending_size',
+        'ending',
+        'age',
+        'frequency',
+    ];
+
     public $numeral_sort_type = [
         'X',      // all, none, or unknown
         'CARD',   // CARDinal
@@ -143,6 +183,26 @@ class inflection
 
     public $numeral_value_type;
 
+    /**
+     * eg "VPAR 1 0 NOM S X PRES ACTIVE PPL 1 3 ans X A"
+     * @var array
+     */
+    public $participle_attributes = [
+        'which',
+        'variant',
+        'case',
+        'number',
+        'gender',
+        'tense',
+        'voice',
+        'mood',
+        'stem_key',
+        'ending_size',
+        'ending',
+        'age',
+        'frequency',
+    ];
+
     public $parts_of_speech = [
         'ADJ'    => 'adjective',
         'ADV'    => 'adverb',
@@ -150,23 +210,44 @@ class inflection
         'INTERJ' => 'interjection',
         'N'      => 'noun',
         'NUM'    => 'numeral',
-        'PACK'   => 'propack',        // artificial for code
-        'PREFIX' => 'prefix',         // artificial for code
+        // 'PACK'   => 'propack',        // artificial for code
+        // 'PREFIX' => 'prefix',         // artificial for code
         'PREP'   => 'preposition',
         'PRON'   => 'pronoun',
-        'SUFFIX' => 'suffix',         // artificial for code
+        // 'SUFFIX' => 'suffix',         // artificial for code
         'SUPINE' => 'supine',
-        'TACKON' => 'tackon',         // artificial for code
+        // 'TACKON' => 'tackon',         // artificial for code
         'V'      => 'verb',
-        'VPAR'   => 'verb_participle',
+        'VPAR'   => 'participle',
     ];
 
     public $person_type = [0, 1, 2, 3];
 
-    public $preposition_inflection_keys = [
+    /**
+     * eg "PREP GEN 1 0 X A"
+     * @var array
+     */
+    public $preposition_attributes = [
         'case',
         'stem_key',
         'ending_size',
+        'age',
+        'frequency',
+    ];
+
+    /**
+     * eg "PRON 1 0 GEN S X 2 3 jus X A"
+     * @var array
+     */
+    public $pronoun_attributes = [
+        'which',
+        'variant',
+        'case',
+        'number',
+        'gender',
+        'stem_key',
+        'ending_size',
+        'ending',
         'age',
         'frequency',
     ];
@@ -184,6 +265,22 @@ class inflection
 
     public $stem_key_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+    /**
+     * eg "SUPINE 0 0 ACC S N 4 2 um X A"
+     * @var array
+     */
+    public $supine_attributes = [
+        'which',
+        'variant',
+        'case',
+        'number',
+        'gender',
+        'stem_key',
+        'ending_size',
+        'ending',
+        'age',
+        'frequency',
+    ];
 
     public $tense_type = [
         'X',    // all, none, or unknown
@@ -197,7 +294,11 @@ class inflection
 
     public $variant_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    public $verb_inflection_keys = [
+    /**
+     * eg "V 1 1 PRES ACTIVE IND  2 S  2 2 as X A"
+     * @var array
+     */
+    public $verb_attributes = [
         'which',
         'variant',
         'tense',
@@ -239,124 +340,86 @@ class inflection
 
     public $which_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    ///
-
-    public $decn_inflection_keys = [
-        'WHICH' => ['which_type'  , 0],
-        'VAR'   => ['variant_type', 0],
-    ];
-
-    public $inflection_inflection_keys = [
-        'QUAL'   => 'quality_record' ,
-        'KEY'    => ['stem_key_type' , 0],
-        'ENDING' => 'ending_record'  ,
-        'AGE'    => ['age_type'      , 'X'],
-        'FREQ'   => ['frequency_type', 'X'],
-    ];
-
-    public $numeral_inflection_keys = [
-        'DECL'   => 'decn_record'       ,
-        'CS'     => ['case_type'        , 'X'],
-        'NUMBER' => ['number_type'      , 'X'],
-        'GENDER' => ['gender_type'      , 'X'],
-        'SORT'   => ['numeral_sort_type', 'X'],
-    ];
-
-    public $prefix_inflection_keys = [];
-
-    public $pronoun_inflection_keys = [
-        'which',
-        'variant',
-        'case',
-        'number',
-        'gender',
-    ];
-
-    public $propack_inflection_keys = [
-        'which',
-        'variant',
-        'case',
-        'number',
-        'gender',
-    ];
-
-    public $suffix_inflection_keys = [];
-
-    public $supine_inflection_keys = [
-        'CON'              => 'decn_record' ,
-        'CS'               => ['case_type'  , 'X'],
-        'NUMBER'           => ['number_type', 'X'],
-        'GENDER'           => ['gender_type', 'X'],
-    ];
-
-    public $tackon_inflection_keys = [];
-
-    public $tense_voice_mood_inflection_keys = [
-        'TENSE' => 'X', // TENSE_TYPE
-        'VOICE' => 'X', // VOICE_TYPE
-        'MOOD'  => 'X', // MOOD_TYPE
-    ];
-
-    public $vpar_inflection_keys = [
-        'CON'              => 'decn_record'            ,
-        'CS'               => ['case_type'             , 'X'],
-        'NUMBER'           => ['number_type'           , 'X'],
-        'GENDER'           => ['gender_type'           , 'X'],
-        'TENSE_VOICE_MODD' => 'tense_voice_mood_record',
-    ];
-
     public function __construct()
     {
         $this->numeral_value_type = range(0, 1000);
-        $this->flip_types();
+        $this->flip_properties();
     }
 
-    public function flip_types()
+    public function combine_attributes_and_values($attributes, $values, $property)
+    {
+        if (isset($attributes['ending'])) {
+            if (! isset($attributes['ending_size'])) {
+                throw new Exception("Ending size attribute missing in: $property.");
+            }
+
+            $ending_size_index = $attributes['ending_size'];
+
+            if ($values[$ending_size_index] == 0) {
+                // there is no ending value, removes the ending key
+                unset($attributes['ending']);
+            }
+        }
+
+        $attributes_count = count($attributes);
+        $values_count     = count($values);
+
+        if ($attributes_count != $values_count) {
+            $message = $this->set_error_message('Inflection attributes and values do not match: %d != %d.', $attributes_count, $values_count);
+            throw new Exception($message);
+        }
+
+        $attributes = array_keys($attributes);
+        $inflection = array_combine($attributes, $values);
+
+        return $inflection;
+    }
+
+    public function flip_properties()
     {
         $properties = get_object_vars($this);
 
         foreach ($properties as $property => $values) {
-            if (preg_match('~_type$~', $property)) {
+            if (preg_match('~_(attributes|type)$~', $property)) {
                 $this->$property = array_flip($values);
             }
         }
     }
 
-    public function load_inflections()
+    public function load_inflections($lines = null)
     {
-        $file = new file();
-        $lines = $file->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
+        if (! $lines) {
+            $file = new file();
+            $lines = $file->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
+        }
+
         $inflections = $this->parse_inflections($lines);
 
         return $inflections;
     }
 
-    public function parse_inflection($line, $line_number)
+    public function parse_inflection($line)
     {
+        list($values, $part_of_speech) = $this->split_inflection($line);
 
-        list($inflection_values, $part_of_speech) = $this->split_inflection($line, $line_number);
+        $property = $this->parts_of_speech[$part_of_speech] . '_attributes';
+        $attributes = $this->$property;
 
-        $inflection_keys_property = $this->parts_of_speech[$part_of_speech] . '_inflection_keys';
-        $inflection_keys = $this->$inflection_keys_property;
+        $inflection = $this->combine_attributes_and_values($attributes, $values, $property);
 
-        $value_count = count($inflection_values);
-
-        $parsed['part_of_speech'] = $part_of_speech;
-
-        foreach ($inflection_values as $index => $inflection_value) {
-            if (! isset($inflection_keys[$index])) {
-                throw new Exception("Error line #$line_number! Unexpected value: $inflection_value.");
+        foreach ($inflection as $attribute => $value) {
+            if ($attribute != 'ending') {
+                $this->validate_inflection_value($attribute, $value);
             }
-
-            $inflection_key = $inflection_keys[$index];
-            $ending_size = empty($parsed['ending_size']) ? 0 : $parsed['ending_size'];
-            list($inflection_value, $value_count) = $this->validate_inflection_value($inflection_key, $inflection_value, $ending_size, $value_count, $line_number);
-            $parsed[$inflection_key] = $inflection_value;
         }
 
-        $this->validate_inflection_value_count($inflection_keys, $value_count, $line_number);
+        if (isset($inflection['ending'])) {
+            $this->validate_ending_size($inflection);
+        }
 
-        $parsed['line_number'] = $line_number;
+        $parsed['part_of_speech'] = $part_of_speech;
+        $parsed += $inflection;
+        $parsed['line_number'] = $this->line_number;
 
         return $parsed;
     }
@@ -372,65 +435,66 @@ class inflection
                 continue;
             }
 
-            $line_number = $index + 1;
-            $inflections[] = $this->parse_inflection($line, $line_number);
-            break; // TODO: remove
+            $this->line_number = $index + 1;
+            $inflections[] = $this->parse_inflection($line);
         }
 
         return $inflections;
     }
 
-    public function split_inflection($line, $line_number)
+    /**
+     *
+     * @param string $format
+     * @param string $arg1
+     * @param string $arg2 etc.
+     * @return string
+     */
+    public function set_error_message()
     {
-        $inflection_values = preg_split('~ +~', $line, null, PREG_SPLIT_NO_EMPTY);
-        $part_of_speech = array_shift($inflection_values);
+        $args = func_get_args();
+        $format = "Error line #%d: " . array_shift($args);
+        array_unshift($args, $this->line_number);
+        $message = vprintf($format, $args);
+
+        return $message;
+    }
+
+    public function split_inflection($line)
+    {
+        $values = preg_split('~ +~', $line, null, PREG_SPLIT_NO_EMPTY);
+        $part_of_speech = array_shift($values);
 
         if (! isset($this->parts_of_speech[$part_of_speech])) {
-            throw new Exception("Error line #$line_number! Invalid part of speech: $part_of_speech.");
+            $message = $this->set_error_message('Invalid part of speech: %s.', $part_of_speech);
+            throw new Exception($message);
         }
 
-        return [$inflection_values, $part_of_speech];
+        return [$values, $part_of_speech];
     }
 
-    public function validate_inflection_value($inflection_key, $inflection_value, $ending_size, $value_count, $line_number)
+    public function validate_ending_size($inflection)
     {
-        if ($inflection_key == 'ending') {
-            if (empty($ending_size)) {
-                $inflection_value = null;
-                $value_count++;
+        $ending_size = strlen($inflection['ending']);
 
-            } elseif ($ending_size != strlen($inflection_value)) {
-                throw new Exception("Error line #$line_number! Ending and size do not match.");
-            }
-
-        } else {
-            $property = $inflection_key . '_type';
-
-            if (! isset($this->$property)) {
-                throw new Exception("Invalid property: $property");
-            }
-
-            $valid_inflection_values = $this->$property;
-
-            if (!isset($valid_inflection_values[$inflection_value])) {
-                throw new Exception("Error line #$line_number! Invalid key value: $inflection_key => $inflection_value.");
-            }
+        if ($inflection['ending_size'] != $ending_size) {
+            $message = $this->set_error_message('Ending and size do not match: %d != %d.', $ending_size, $inflection['ending_size']);
+            throw new Exception($message);
         }
-
-        return [$inflection_value, $value_count];
     }
 
-    public function validate_inflection_value_count($inflection_keys, $value_count, $line_number)
+    public function validate_inflection_value($attribute, $value)
     {
-        $missing_count = count($inflection_keys) - $value_count;
+        $property = $attribute . '_type';
 
-        if ($missing_count > 0) {
-            throw new Exception("Error line #$line_number! $missing_count missing value(s).");
+        if (! isset($this->$property)) {
+            throw new Exception("Invalid property: $property.");
         }
 
-        if ($missing_count < 0) {
-            $missing_count = -$missing_count;
-            throw new Exception("Error line #$line_number! $missing_count unexpected values(s).");
+        $attribute_values = $this->$property;
+
+        if (! isset($attribute_values[$value])) {
+            $message = $this->set_error_message('Invalid inflection value: %s => %s.', $attribute, $value);
+            throw new Exception($message);
         }
     }
 }
