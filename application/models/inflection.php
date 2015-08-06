@@ -97,6 +97,8 @@ class inflection
         'C', // Common (masculine and/or feminine)
     ];
 
+    public $inflection_line_numbers;
+
     /**
      * eg "INTERJ 1 0 X A"
      * @var array
@@ -436,6 +438,7 @@ class inflection
             }
 
             $this->line_number = $index + 1;
+
             $inflections[] = $this->parse_inflection($line);
         }
 
@@ -462,6 +465,15 @@ class inflection
     public function split_inflection($line)
     {
         $values = preg_split('~ +~', $line, null, PREG_SPLIT_NO_EMPTY);
+        $hash = implode('|', $values);
+
+        if (isset($this->inflection_line_numbers[$hash])) {
+            $message = $this->set_error_message('Duplicate inflection, same as line: %d', $this->inflection_line_numbers[$hash]);
+            throw new Exception($message);
+        }
+
+        $this->inflection_line_numbers[$hash] = $this->line_number;
+
         $part_of_speech = array_shift($values);
 
         if (! isset($this->parts_of_speech[$part_of_speech])) {
