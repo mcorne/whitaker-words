@@ -1,7 +1,7 @@
 <?php
-require_once 'file.php';
+require_once 'common.php';
 
-class inflection
+class inflection extends common
 {
     /**
      * eg "ADJ 1 1 NOM S M POS 1 2 us X A"
@@ -110,8 +110,6 @@ class inflection
         'frequency',
     ];
 
-    public $line_number;
-
     public $mood_type = [
         'X',   // all, none, or unknown
         'IND', // INDicative
@@ -136,19 +134,6 @@ class inflection
         'ending',
         'age',
         'frequency',
-    ];
-
-    public $noun_type = [
-        'X', // unknown, nondescript
-        'S', // Singular "only"           --  not really used
-        'M', // plural or Multiple "only" --  not really used
-        'A', // Abstract idea
-        'G', // Group/collective Name -- Roman(s)
-        'N', // proper Name
-        'P', // a Person
-        'T', // a Thing
-        'L', // Locale, name of country/city
-        'W', // a place Where
     ];
 
     public $number_type = [
@@ -182,8 +167,6 @@ class inflection
         'DIST',   // DISTributive
         'ADVERB', // numeral ADVERB
     ];
-
-    public $numeral_value_type;
 
     /**
      * eg "VPAR 1 0 NOM S X PRES ACTIVE PPL 1 3 ans X A"
@@ -254,17 +237,6 @@ class inflection
         'frequency',
     ];
 
-    public $pronoun_type = [
-        'X',      // unknown, nondescript
-        'PERS',   // PERSonal
-        'REL',    // RELative
-        'REFLEX', // REFLEXive
-        'DEMONS', // DEMONStrative
-        'INTERR', // INTERRogative
-        'INDEF',  // INDEFinite
-        'ADJECT', // ADJECTival
-    ];
-
     public $stem_key_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     /**
@@ -315,25 +287,6 @@ class inflection
         'frequency',
     ];
 
-    public $verb_type = [
-        'X',        // all, none, or unknown
-        'TO_BE',    // only the verb TO BE (esse)
-        'TO_BEING', // compounds of the verb to be (esse)
-        'GEN',      // verb taking the GENitive
-        'DAT',      // verb taking the DATive
-        'ABL',      // verb taking the ABLative
-        'TRANS',    // TRANSitive verb
-        'INTRANS',  // INTRANSitive verb
-        'IMPERS',   // IMPERSonal verb (implied subject 'it', 'they', 'God')
-                    // agent implied in action, subject in predicate
-        'DEP',      // DEPonent verb
-                    // only passive form but with active meaning
-        'SEMIDEP',  // SEMIDEPonent verb (forms perfect as deponent)
-                    // (perfect passive has active force)
-        'PERFDEF',  // PERFect DEFinite verb
-                    // having only perfect stem, but with present force
-    ];
-
     public $voice_type = [
         'X',       // all, none, or unknown
         'ACTIVE',  // ACTIVE
@@ -342,13 +295,7 @@ class inflection
 
     public $which_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    public function __construct()
-    {
-        $this->numeral_value_type = range(0, 1000);
-        $this->flip_properties();
-    }
-
-    public function combine_attributes_and_values($attributes, $values, $property)
+    public function combine_inflection_attributes_and_values($attributes, $values, $property)
     {
         if (isset($attributes['ending'])) {
             if (! isset($attributes['ending_size'])) {
@@ -363,36 +310,15 @@ class inflection
             }
         }
 
-        $attributes_count = count($attributes);
-        $values_count     = count($values);
-
-        if ($attributes_count != $values_count) {
-            $message = $this->set_error_message('Inflection attributes and values do not match: %d != %d.', $attributes_count, $values_count);
-            throw new Exception($message);
-        }
-
-        $attributes = array_keys($attributes);
-        $inflection = array_combine($attributes, $values);
+        $inflection = $this->combine_attributes_and_values($attributes, $values);
 
         return $inflection;
-    }
-
-    public function flip_properties()
-    {
-        $properties = get_object_vars($this);
-
-        foreach ($properties as $property => $values) {
-            if (preg_match('~_(attributes|type)$~', $property)) {
-                $this->$property = array_flip($values);
-            }
-        }
     }
 
     public function load_inflections($lines = null)
     {
         if (! $lines) {
-            $file = new file();
-            $lines = $file->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
+            $lines = $this->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
         }
 
         $inflections = $this->parse_inflections($lines);
@@ -407,7 +333,7 @@ class inflection
         $property = $this->parts_of_speech[$part_of_speech] . '_attributes';
         $attributes = $this->$property;
 
-        $inflection = $this->combine_attributes_and_values($attributes, $values, $property);
+        $inflection = $this->combine_inflection_attributes_and_values($attributes, $values, $property);
 
         foreach ($inflection as $attribute => $value) {
             if ($attribute != 'ending') {
@@ -443,23 +369,6 @@ class inflection
         }
 
         return $inflections;
-    }
-
-    /**
-     *
-     * @param string $format
-     * @param string $arg1
-     * @param string $arg2 etc.
-     * @return string
-     */
-    public function set_error_message()
-    {
-        $args = func_get_args();
-        $format = "Error line #%d: " . array_shift($args);
-        array_unshift($args, $this->line_number);
-        $message = vprintf($format, $args);
-
-        return $message;
     }
 
     public function split_inflection($line)
