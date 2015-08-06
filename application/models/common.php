@@ -3,9 +3,13 @@ class common
 {
     public $line_number;
 
+    public $pdo;
+
     public function __construct()
     {
         $this->flip_properties();
+
+        $this->connect_to_database();
     }
 
     public function combine_attributes_and_values($attributes, $values)
@@ -24,6 +28,12 @@ class common
         return $combined;
     }
 
+    public function connect_to_database()
+    {
+        $dsn = sprintf('sqlite:%s/../data/whitaker.sqlite', __DIR__);
+        $this->pdo = new PDO($dsn, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    }
+
     public function flip_properties()
     {
         $properties = get_object_vars($this);
@@ -34,7 +44,7 @@ class common
             }
         }
     }
-    
+
     public function read_lines($filename)
     {
         if (! $lines = @file($filename)) {

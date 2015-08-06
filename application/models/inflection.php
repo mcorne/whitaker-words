@@ -10,7 +10,7 @@ class inflection extends common
     public $adjective_attributes = [
         'which',
         'variant',
-        'case',
+        'cases',
         'number',
         'gender',
         'comparison',
@@ -45,7 +45,7 @@ class inflection extends common
         'H', // modern      --  Coined recently, words for new things (19-20)
     ];
 
-    public $case_type = [
+    public $cases_type = [
         'X',   // all, none, or unknown
         'NOM', // NOMinative
         'VOC', // VOCative
@@ -126,7 +126,7 @@ class inflection extends common
     public $noun_attributes = [
         'which',
         'variant',
-        'case',
+        'cases',
         'number',
         'gender',
         'stem_key',
@@ -149,7 +149,7 @@ class inflection extends common
     public $numeral_attributes = [
         'which',
         'variant',
-        'case',
+        'cases',
         'number',
         'gender',
         'numeral_sort',
@@ -175,7 +175,7 @@ class inflection extends common
     public $participle_attributes = [
         'which',
         'variant',
-        'case',
+        'cases',
         'number',
         'gender',
         'tense',
@@ -213,7 +213,7 @@ class inflection extends common
      * @var array
      */
     public $preposition_attributes = [
-        'case',
+        'cases',
         'stem_key',
         'ending_size',
         'age',
@@ -227,7 +227,7 @@ class inflection extends common
     public $pronoun_attributes = [
         'which',
         'variant',
-        'case',
+        'cases',
         'number',
         'gender',
         'stem_key',
@@ -246,7 +246,7 @@ class inflection extends common
     public $supine_attributes = [
         'which',
         'variant',
-        'case',
+        'cases',
         'number',
         'gender',
         'stem_key',
@@ -315,6 +315,39 @@ class inflection extends common
         return $inflection;
     }
 
+    public function create_inflection_table()
+    {
+        $sql = '
+            DROP TABLE IF EXISTS inflection;
+
+            VACUUM;
+
+            CREATE TABLE inflection (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                part_of_seech TEXT NOT NULL,
+                which         INTEGER,
+                variant       INTEGER,
+                cases         TEXT,
+                number        TEXT,
+                gender        TEXT,
+                comparison    TEXT,
+                numeral_sort  TEXT,
+                tense         TEXT,
+                voice         TEXT,
+                mood          TEXT,
+                person        INTEGER,
+                stem_key      INTEGER NOT NULL,
+                ending_size   INTEGER NOT NULL,
+                ending        TEXT,
+                age           TEXT NOT NULL,
+                frequency     TEXT NOT NULL,
+                line_number   INTEGER NOT NULL
+            );
+        ';
+
+        $this->pdo->exec($sql);
+    }
+
     public function load_inflections($lines = null)
     {
         if (! $lines) {
@@ -322,6 +355,7 @@ class inflection extends common
         }
 
         $inflections = $this->parse_inflections($lines);
+        $this->create_inflection_table();
 
         return $inflections;
     }
