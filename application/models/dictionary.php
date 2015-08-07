@@ -380,6 +380,43 @@ class dictionary extends common
         return $entry;
     }
 
+    public function create_dictionary_table()
+    {
+        $sql = '
+            DROP TABLE IF EXISTS dictionary;
+
+            VACUUM;
+
+            CREATE TABLE dictionary (
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                stem1          TEXT NOT NULL,
+                stem2          TEXT,
+                stem3          TEXT,
+                stem4          TEXT,
+                part_of_speech TEXT NOT NULL,
+                which          INTEGER,
+                variant        INTEGER,
+                comparison     TEXT,
+                gender         TEXT,
+                noun_kind      TEXT,
+                numeral_sort   TEXT,
+                numeral_value  TEXT,
+                pronoun_kind   TEXT,
+                cases          TEXT,
+                verb_kind      TEXT,
+                age            TEXT NOT NULL,
+                area           TEXT NOT NULL,
+                geography      TEXT NOT NULL,
+                frequency      TEXT NOT NULL,
+                source         TEXT NOT NULL,
+                meaning        TEXT NOT NULL,
+                line_number    INTEGER NOT NULL
+            );
+        ';
+
+        $this->pdo->exec($sql);
+    }
+
     public function extract_meaning($line)
     {
         $meaning = substr($line, self::MEANING_POSITION);
@@ -430,8 +467,8 @@ class dictionary extends common
         }
 
         $entries = $this->parse_entries($lines);
-        // $this->create_dictionary_table();
-        // $this->insert_entries($entries);
+        $this->create_dictionary_table();
+        $this->insert_entries('dictionary', $entries);
 
         return $entries;
     }

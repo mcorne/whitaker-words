@@ -279,23 +279,6 @@ class inflection extends common
         $this->pdo->exec($sql);
     }
 
-    public function insert_inflection($inflection)
-    {
-        $colums = implode(',', array_keys($inflection));
-        $values = array_map([$this->pdo, 'quote'], array_values($inflection));
-        $values = implode(',', $values);
-        $sql = "INSERT INTO inflection ($colums) VALUES ($values)";
-
-        $this->pdo->exec($sql);
-    }
-
-    public function insert_inflections($inflections)
-    {
-        $this->pdo->exec('BEGIN TRANSACTION');
-        array_map([$this, 'insert_inflection'], $inflections);
-        $this->pdo->exec('COMMIT TRANSACTION');
-    }
-
     public function load_inflections($lines = null)
     {
         if (! $lines) {
@@ -304,7 +287,7 @@ class inflection extends common
 
         $inflections = $this->parse_entries($lines);
         $this->create_inflection_table();
-        $this->insert_inflections($inflections);
+        $this->insert_entries('inflection', $inflections);
 
         return $inflections;
     }

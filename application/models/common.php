@@ -112,6 +112,27 @@ class common
         }
     }
 
+    public function insert_entry($table_name, $entry)
+    {
+        $colums = implode(',', array_keys($entry));
+        $values = array_map([$this->pdo, 'quote'], array_values($entry));
+        $values = implode(',', $values);
+        $sql = "INSERT INTO $table_name ($colums) VALUES ($values)";
+
+        $this->pdo->exec($sql);
+    }
+
+    public function insert_entries($table_name, $entries)
+    {
+        $this->pdo->exec('BEGIN TRANSACTION');
+
+        foreach ($entries as $entry) {
+            $this->insert_entry($table_name, $entry);
+        }
+
+        $this->pdo->exec('COMMIT TRANSACTION');
+    }
+
     public function parse_entries($lines)
     {
         $entries = [];
