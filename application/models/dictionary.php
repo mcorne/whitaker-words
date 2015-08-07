@@ -1,8 +1,32 @@
 <?php
-require_once 'file.php';
+require_once 'common.php';
 
-class dictionary
+class dictionary extends common
 {
+    const MEANING_POSITION        = 110;
+    const PART_OF_SPEECH_POSITION = 76;
+
+    /**
+     * eg "abact abact ADJ 1 1 POS X X X E S driven away/off/back;"
+     * @var array
+     */
+    public $adjective_attributes = [
+        'stem1',
+        'stem2',
+        'stem3',
+        'stem4',
+        'part_of_speech',
+        'which',
+        'variant',
+        'comparison',
+        'age',
+        'area',
+        'geography',
+        'frequency',
+        'source',
+        'meaning',
+    ];
+
     public $area_type = [
         'X', // All or none
         'A', // Agriculture, Flora, Fauna, Land, Equipment, Rural
@@ -18,7 +42,7 @@ class dictionary
         'Y', // Mythology
     ];
 
-    public $geo_type = [
+    public $geography_type = [
         'X', // All or none
         'A', // Africa
         'B', // Britian
@@ -53,6 +77,20 @@ class dictionary
     ];
 
     public $numeral_value_type;
+
+
+    public $parts_of_speech = [
+        'ADJ'    => 'adjective',
+        'ADV'    => 'adverb',
+        'CONJ'   => 'conjunction',
+        'INTERJ' => 'interjection',
+        'N'      => 'noun',
+        'NUM'    => 'numeral',
+        'PACK'   => 'packon',
+        'PREP'   => 'preposition',
+        'PRON'   => 'pronoun',
+        'V'      => 'verb',
+    ];
 
     public $pronoun_type = [
         'X',      // unknown, nondescript
@@ -137,5 +175,110 @@ class dictionary
     public function __construct()
     {
         $this->numeral_value_type = range(0, 1000);
+        parent::__construct();
+    }
+
+    public function combine_entry_attributes_and_values($attributes, $values)
+    {
+        $entry = $this->combine_attributes_and_values($attributes, $values);
+
+        if (is_null($entry['stem2'])) {
+            unset($entry['stem2']);
+        }
+        if (is_null($entry['stem3'])) {
+            unset($entry['stem3']);
+        }
+        if (is_null($entry['stem4'])) {
+            unset($entry['stem4']);
+        }
+
+        return $entry;
+    }
+
+    public function extract_meaning($line)
+    {
+        $meaning = substr($line, self::MEANING_POSITION);
+
+        if (! $meaning = trim($meaning)) {
+            $message = $this->set_error_message('No meaning.');
+            throw new Exception($message);
+        }
+
+        return $meaning;
+    }
+
+    public function extract_other_attributes($line)
+    {
+        $line_part = substr($line, self::PART_OF_SPEECH_POSITION, self::MEANING_POSITION - self::PART_OF_SPEECH_POSITION);
+        $other_attributes = preg_split('~ +~', $line_part, null, PREG_SPLIT_NO_EMPTY);
+
+        return $other_attributes;
+    }
+
+    public function extract_stems($line)
+    {
+        $line_part = substr($line, 0, self::PART_OF_SPEECH_POSITION);
+
+        if (! $stems = preg_split('~ +~', $line_part, null, PREG_SPLIT_NO_EMPTY)) {
+            $message = $this->set_error_message('No stem.');
+            throw new Exception($message);
+        }
+
+        $stems = array_pad($stems, 4, null);
+
+        return $stems;
+    }
+
+    public function extract_part_of_speech($line)
+    {
+        $line_without_stems = substr($line, self::PART_OF_SPEECH_POSITION);
+        list($part_of_speech) = explode(' ', $line_without_stems);
+        $this->validate_part_of_speech($part_of_speech);
+
+        return $part_of_speech;
+    }
+
+    public function load_dictionary($lines = null)
+    {
+        if (! $lines) {
+            $lines = $this->read_lines(__DIR__ . '/../data/DICTLINE.GEN');
+        }
+
+        $entries = $this->parse_entries($lines);
+        // $this->create_dictionary_table();
+        // $this->insert_entries($entries);
+
+        return $entries;
+    }
+
+    public function parse_entry($line)
+    {
+        $part_of_speech = $this->extract_part_of_speech($line);
+        $values = $this->split_entry($line);
+
+        $property = $this->parts_of_speech[$part_of_speech] . '_attributes';
+        $attributes = $this->$property;
+
+        $entry = $this->combine_entry_attributes_and_values($attributes, $values);
+
+        foreach ($entry as $attribute => $value) {
+            if (! in_array($attribute, ['stem1', 'stem2', 'stem3', 'stem4', 'part_of_speech', 'meaning'])) {
+                $this->validate_entry_value($attribute, $value);
+            }
+        }
+
+        $entry['line_number'] = $this->line_number;
+
+        return $entry;
+    }
+
+    public function split_entry($line)
+    {
+        $values = array_merge($this->extract_stems($line), $this->extract_other_attributes($line));
+        $values[] = $this->extract_meaning($line);
+
+        $this->validate_unique_entry($values);
+
+        return $values;
     }
 }

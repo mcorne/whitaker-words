@@ -33,18 +33,6 @@ class inflection extends common
         'frequency',
     ];
 
-    public $age_type = [
-        'X', //             --  In use throughout the ages/unknown -- the default
-        'A', // archaic     --  Very early forms, obsolete by classical times
-        'B', // early       --  Early Latin, pre-classical, used for effect/poetry
-        'C', // classical   --  Limited to classical (~150 BC - 200 AD)
-        'D', // late        --  Late, post-classical (3rd-5th centuries)
-        'E', // later       --  Latin not in use in Classical times (6-10), Christian
-        'F', // medieval    --  Medieval (11th-15th centuries)
-        'G', // scholar     --  Latin post 15th - Scholarly/Scientific   (16-18)
-        'H', // modern      --  Coined recently, words for new things (19-20)
-    ];
-
     public $cases_type = [
         'X',   // all, none, or unknown
         'NOM', // NOMinative
@@ -54,13 +42,6 @@ class inflection extends common
         'DAT', // DATive
         'ABL', // ABLative
         'ACC', // ACCusitive
-    ];
-
-    public $comparison_type = [
-        'X',     // all, none, or unknown
-        'POS',   // POSitive
-        'COMP',  // COMParative
-        'SUPER', // SUPERlative
     ];
 
     /**
@@ -76,19 +57,6 @@ class inflection extends common
 
     public $ending_size_type = [0, 1, 2, 3, 4, 5, 6, 7];
 
-    public $frequency_type = [
-        'X', //             --  Unknown or unspecified
-        'A', // very freq   --  Very frequent, in all Elementry Latin books
-        'B', // frequent    --  Frequent, in top 10 percent
-        'C', // common      --  For Dictionary, in top 10,000 words
-        'D', // lesser      --  For Dictionary, in top 20,000 words
-        'E', // uncommon    --  2 or 3 citations
-        'F', // very rare   --  Having only single citation in OLD or L+S
-        'I', // inscription --  Only citation is inscription
-        'M', // graffiti    --  Presently not much used
-        'N', // Pliny       --  Things that appear (almost) only in Pliny Natural History
-    ];
-
     public $gender_type = [
         'X', // all, none, or unknown
         'M', // Masculine
@@ -96,8 +64,6 @@ class inflection extends common
         'N', // Neuter
         'C', // Common (masculine and/or feminine)
     ];
-
-    public $inflection_line_numbers;
 
     /**
      * eg "INTERJ 1 0 X A"
@@ -195,13 +161,9 @@ class inflection extends common
         'INTERJ' => 'interjection',
         'N'      => 'noun',
         'NUM'    => 'numeral',
-        // 'PACK'   => 'propack',        // artificial for code
-        // 'PREFIX' => 'prefix',         // artificial for code
         'PREP'   => 'preposition',
         'PRON'   => 'pronoun',
-        // 'SUFFIX' => 'suffix',         // artificial for code
         'SUPINE' => 'supine',
-        // 'TACKON' => 'tackon',         // artificial for code
         'V'      => 'verb',
         'VPAR'   => 'participle',
     ];
@@ -266,8 +228,6 @@ class inflection extends common
         'FUTP', // FUTure Perfect
     ];
 
-    public $variant_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-
     /**
      * eg "V 1 1 PRES ACTIVE IND  2 S  2 2 as X A"
      * @var array
@@ -292,8 +252,6 @@ class inflection extends common
         'ACTIVE',  // ACTIVE
         'PASSIVE', // PASSIVE
     ];
-
-    public $which_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     public function combine_inflection_attributes_and_values($attributes, $values, $property)
     {
@@ -371,14 +329,14 @@ class inflection extends common
             $lines = $this->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
         }
 
-        $inflections = $this->parse_inflections($lines);
+        $inflections = $this->parse_entries($lines);
         $this->create_inflection_table();
         $this->insert_inflections($inflections);
 
         return $inflections;
     }
 
-    public function parse_inflection($line)
+    public function parse_entry($line)
     {
         list($values, $part_of_speech) = $this->split_inflection($line);
 
@@ -389,7 +347,7 @@ class inflection extends common
 
         foreach ($inflection as $attribute => $value) {
             if ($attribute != 'ending') {
-                $this->validate_inflection_value($attribute, $value);
+                $this->validate_entry_value($attribute, $value);
             }
         }
 
@@ -397,50 +355,19 @@ class inflection extends common
             $this->validate_ending_size($inflection);
         }
 
-        $parsed['part_of_speech'] = $part_of_speech;
-        $parsed += $inflection;
-        $parsed['line_number'] = $this->line_number;
+        $entry['part_of_speech'] = $part_of_speech;
+        $entry += $inflection;
+        $entry['line_number'] = $this->line_number;
 
-        return $parsed;
-    }
-
-    public function parse_inflections($lines)
-    {
-        $inflections = [];
-
-        foreach ($lines as $index => $line) {
-            list($line) = explode('--', $line);
-
-            if (! $line = trim($line)) {
-                continue;
-            }
-
-            $this->line_number = $index + 1;
-
-            $inflections[] = $this->parse_inflection($line);
-        }
-
-        return $inflections;
+        return $entry;
     }
 
     public function split_inflection($line)
     {
         $values = preg_split('~ +~', $line, null, PREG_SPLIT_NO_EMPTY);
-        $hash = implode('|', $values);
-
-        if (isset($this->inflection_line_numbers[$hash])) {
-            $message = $this->set_error_message('Duplicate inflection, same as line: %d', $this->inflection_line_numbers[$hash]);
-            throw new Exception($message);
-        }
-
-        $this->inflection_line_numbers[$hash] = $this->line_number;
-
+        $this->validate_unique_entry($values);
         $part_of_speech = array_shift($values);
-
-        if (! isset($this->parts_of_speech[$part_of_speech])) {
-            $message = $this->set_error_message('Invalid part of speech: %s.', $part_of_speech);
-            throw new Exception($message);
-        }
+        $this->validate_part_of_speech($part_of_speech);
 
         return [$values, $part_of_speech];
     }
@@ -451,22 +378,6 @@ class inflection extends common
 
         if ($inflection['ending_size'] != $ending_size) {
             $message = $this->set_error_message('Ending and size do not match: %d != %d.', $ending_size, $inflection['ending_size']);
-            throw new Exception($message);
-        }
-    }
-
-    public function validate_inflection_value($attribute, $value)
-    {
-        $property = $attribute . '_type';
-
-        if (! isset($this->$property)) {
-            throw new Exception("Invalid property: $property.");
-        }
-
-        $attribute_values = $this->$property;
-
-        if (! isset($attribute_values[$value])) {
-            $message = $this->set_error_message('Invalid inflection value: %s => %s.', $attribute, $value);
             throw new Exception($message);
         }
     }
