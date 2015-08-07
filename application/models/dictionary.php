@@ -7,7 +7,8 @@ class dictionary extends common
     const PART_OF_SPEECH_POSITION = 76;
 
     /**
-     * eg "abact abact ADJ 1 1 POS X X X E S driven away/off/back;"
+     * eg "abact abact                      ADJ 1 1 POS X X X E S driven away/off/back;"
+     * eg "abject abject abjecti abjectissi ADJ 1 1 X   X X X B L downcast, dejected;"
      * @var array
      */
     public $adjective_attributes = [
@@ -18,6 +19,26 @@ class dictionary extends common
         'part_of_speech',
         'which',
         'variant',
+        'comparison',
+        'age',
+        'area',
+        'geography',
+        'frequency',
+        'source',
+        'meaning',
+    ];
+
+    /**
+     * eg "abdicative                     ADV POS D X X E S negatively;"
+     * eg "abjecte abjectius abjectissime ADV X   X X X C L in spiritless manner;"
+     * @var array
+     */
+    public $adverb_attributes = [
+        'stem1',
+        'stem2',
+        'stem3',
+        'stem4',
+        'part_of_speech',
         'comparison',
         'age',
         'area',
@@ -42,6 +63,24 @@ class dictionary extends common
         'Y', // Mythology
     ];
 
+    /**
+     * eg "ac CONJ X X X A O and, and also, and besides;"
+     * @var array
+     */
+    public $conjunction_attributes = [
+        'stem1',
+        'stem2',
+        'stem3',
+        'stem4',
+        'part_of_speech',
+        'age',
+        'area',
+        'geography',
+        'frequency',
+        'source',
+        'meaning',
+    ];
+
     public $geography_type = [
         'X', // All or none
         'A', // Africa
@@ -63,7 +102,48 @@ class dictionary extends common
         'U', // Eastern Europe
     ];
 
-    public $noun_type = [
+    /**
+     * eg "aelinon INTERJ X X X F O exclamation of sorrow;"
+     * @var array
+     */
+    public $interjection_attributes = [
+        'stem1',
+        'stem2',
+        'stem3',
+        'stem4',
+        'part_of_speech',
+        'age',
+        'area',
+        'geography',
+        'frequency',
+        'source',
+        'meaning',
+    ];
+
+    /**
+     * eg "abac abac N 2 1 M T E E X C E small table for cruets, credence;"
+     * eg "Act       N 9 8 N T E E X D E Acts (abbreviation);"
+     * @var array
+     */
+    public $noun_attributes = [
+        'stem1',
+        'stem2',
+        'stem3',
+        'stem4',
+        'part_of_speech',
+        'which',
+        'variant',
+        'gender',
+        'noun_kind',
+        'age',
+        'area',
+        'geography',
+        'frequency',
+        'source',
+        'meaning',
+    ];
+
+    public $noun_kind_type = [
         'X', // unknown, nondescript
         'S', // Singular "only"           --  not really used
         'M', // plural or Multiple "only" --  not really used
@@ -76,8 +156,51 @@ class dictionary extends common
         'W', // a place Where
     ];
 
+    /**
+     * eg "amb                                     NUM 1 2 CARD 0   X X X B O both; two of pair;"
+     * eg "biscentum biscentesim biscenten biscent NUM 2 0 X    200 X X X C E two hundred;"
+     * @var array
+     */
+    public $numeral_attributes = [
+        'stem1',
+        'stem2',
+        'stem3',
+        'stem4',
+        'part_of_speech',
+        'which',
+        'variant',
+        'numeral_sort',
+        'numeral_value',
+        'age',
+        'area',
+        'geography',
+        'frequency',
+        'source',
+        'meaning',
+    ];
+
     public $numeral_value_type;
 
+    /**
+     * eg "qu cu PACK 1 0 REL X X X A X (w/-cumque) who/whatever;"
+     * @var array
+     */
+    public $packon_attributes = [
+        'stem1',
+        'stem2',
+        'stem3',
+        'stem4',
+        'part_of_speech',
+        'which',
+        'variant',
+        'pronoun_kind',
+        'age',
+        'area',
+        'geography',
+        'frequency',
+        'source',
+        'meaning',
+    ];
 
     public $parts_of_speech = [
         'ADJ'    => 'adjective',
@@ -92,7 +215,47 @@ class dictionary extends common
         'V'      => 'verb',
     ];
 
-    public $pronoun_type = [
+    /**
+     * eg "ab PREP ABL X X X A O by (agent), from;"
+     * @var array
+     */
+    public $preposition_attributes = [
+        'stem1',
+        'stem2',
+        'stem3',
+        'stem4',
+        'part_of_speech',
+        'cases',
+        'age',
+        'area',
+        'geography',
+        'frequency',
+        'source',
+        'meaning',
+    ];
+
+    /**
+     * eg "aliqu alicu PRON 1 0 INDEF X X X A O anyone/anybody/anything;"
+     * @var array
+     */
+    public $pronoun_attributes = [
+        'stem1',
+        'stem2',
+        'stem3',
+        'stem4',
+        'part_of_speech',
+        'which',
+        'variant',
+        'pronoun_kind',
+        'age',
+        'area',
+        'geography',
+        'frequency',
+        'source',
+        'meaning',
+    ];
+
+    public $pronoun_kind_type = [
         'X',      // unknown, nondescript
         'PERS',   // PERSonal
         'REL',    // RELative
@@ -153,7 +316,29 @@ class dictionary extends common
              // Mostly John White of Blitz Latin
     ];
 
-    public $verb_type = [
+    /**
+     * eg "abaestu abaestu abaestuav abaestuat V 1 1 INTRANS D X X F S wave down;"
+     * eg "cumi                                V 9 9 X       E E Q F E arise;"
+     * @var array
+     */
+    public $verb_attributes = [
+        'stem1',
+        'stem2',
+        'stem3',
+        'stem4',
+        'part_of_speech',
+        'which',
+        'variant',
+        'verb_kind',
+        'age',
+        'area',
+        'geography',
+        'frequency',
+        'source',
+        'meaning',
+    ];
+
+    public $verb_kind_type = [
         'X',        // all, none, or unknown
         'TO_BE',    // only the verb TO BE (esse)
         'TO_BEING', // compounds of the verb to be (esse)
@@ -267,6 +452,8 @@ class dictionary extends common
             }
         }
 
+        $this->validate_stem_count($entry);
+
         $entry['line_number'] = $this->line_number;
 
         return $entry;
@@ -280,5 +467,54 @@ class dictionary extends common
         $this->validate_unique_entry($values);
 
         return $values;
+    }
+
+    public function validate_stem_count($entry)
+    {
+        switch ($entry['part_of_speech']) {
+            case 'ADJ':
+                $expected_stem_count = $entry['comparison'] == 'X' ? 4 : 2;
+                break;
+
+            case 'ADV':
+                $expected_stem_count = $entry['comparison'] == 'X' ? 3 : 1;
+                break;
+
+            case 'CONJ':
+            case 'INTERJ':
+            case 'PREP':
+                $expected_stem_count = 1;
+                break;
+
+            case 'N':
+                $expected_stem_count = $entry['which'] == 9 ? 1 : 2;
+                break;
+
+            case 'NUM':
+                $expected_stem_count = $entry['numeral_sort'] == 'X' ? 4 : 1;
+                break;
+
+            case 'PACK':
+            case 'PRON':
+                $expected_stem_count = 2;
+                break;
+
+            case 'V':
+                $expected_stem_count = $entry['which'] == 9 ? 1 : 4;
+                break;
+
+            default:
+                throw new Exception('Unhandled part of speech: ' . $entry['part_of_speech']);
+        }
+
+        $stem_count = 1;
+        $stem_count += (int) isset($entry['stem2']);
+        $stem_count += (int) isset($entry['stem3']);
+        $stem_count += (int) isset($entry['stem4']);
+
+        if ($stem_count != $expected_stem_count) {
+            $message = $this->set_error_message("Bad stem count: %d != %d", $stem_count, $expected_stem_count);
+            throw new Exception($message);
+        }
     }
 }

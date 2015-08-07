@@ -33,17 +33,6 @@ class inflection extends common
         'frequency',
     ];
 
-    public $cases_type = [
-        'X',   // all, none, or unknown
-        'NOM', // NOMinative
-        'VOC', // VOCative
-        'GEN', // GENitive
-        'LOC', // LOCative
-        'DAT', // DATive
-        'ABL', // ABLative
-        'ACC', // ACCusitive
-    ];
-
     /**
      * eg "CONJ 1 0 X A"
      * @var array
@@ -56,14 +45,6 @@ class inflection extends common
     ];
 
     public $ending_size_type = [0, 1, 2, 3, 4, 5, 6, 7];
-
-    public $gender_type = [
-        'X', // all, none, or unknown
-        'M', // Masculine
-        'F', // Feminine
-        'N', // Neuter
-        'C', // Common (masculine and/or feminine)
-    ];
 
     /**
      * eg "INTERJ 1 0 X A"
@@ -124,14 +105,6 @@ class inflection extends common
         'ending',
         'age',
         'frequency',
-    ];
-
-    public $numeral_sort_type = [
-        'X',      // all, none, or unknown
-        'CARD',   // CARDinal
-        'ORD',    // ORDinal
-        'DIST',   // DISTributive
-        'ADVERB', // numeral ADVERB
     ];
 
     /**
