@@ -400,6 +400,15 @@ class dictionary extends common
         return $other_attributes;
     }
 
+    public function extract_part_of_speech($line)
+    {
+        $line_without_stems = substr($line, self::PART_OF_SPEECH_POSITION);
+        list($part_of_speech) = explode(' ', $line_without_stems);
+        $this->validate_part_of_speech($part_of_speech);
+
+        return $part_of_speech;
+    }
+
     public function extract_stems($line)
     {
         $line_part = substr($line, 0, self::PART_OF_SPEECH_POSITION);
@@ -412,15 +421,6 @@ class dictionary extends common
         $stems = array_pad($stems, 4, null);
 
         return $stems;
-    }
-
-    public function extract_part_of_speech($line)
-    {
-        $line_without_stems = substr($line, self::PART_OF_SPEECH_POSITION);
-        list($part_of_speech) = explode(' ', $line_without_stems);
-        $this->validate_part_of_speech($part_of_speech);
-
-        return $part_of_speech;
     }
 
     public function load_dictionary($lines = null)
@@ -473,7 +473,13 @@ class dictionary extends common
     {
         switch ($entry['part_of_speech']) {
             case 'ADJ':
-                $expected_stem_count = $entry['comparison'] == 'X' ? 4 : 2;
+                if ($entry['comparison'] == 'X') {
+                    $expected_stem_count = 4;
+                } elseif ($entry['which'] == 9 or $entry['which'] == 0) {
+                    $expected_stem_count = 1;
+                } else {
+                    $expected_stem_count = 2;
+                }
                 break;
 
             case 'ADV':
