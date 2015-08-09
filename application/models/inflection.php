@@ -191,6 +191,37 @@ class inflection extends common
         'frequency',
     ];
 
+    public $table_ending = '
+        CREATE TABLE ending (
+        id       INTEGER PRIMARY KEY AUTOINCREMENT,
+        ending   TEXT NOT NULL,
+        length   INTEGER NOT NULL,
+        reversed TEXT NOT NULL);
+    ';
+
+    public $table_inflection = '
+        CREATE TABLE inflection (
+        id             INTEGER PRIMARY KEY,
+        part_of_speech TEXT NOT NULL,
+        which          INTEGER,
+        variant        INTEGER,
+        cases          TEXT,
+        number         TEXT,
+        gender         TEXT,
+        comparison     TEXT,
+        numeral_sort   TEXT,
+        tense          TEXT,
+        voice          TEXT,
+        mood           TEXT,
+        person         INTEGER,
+        stem_key       INTEGER NOT NULL,
+        ending_size    INTEGER NOT NULL,
+        ending         TEXT,
+        age            TEXT NOT NULL,
+        frequency      TEXT NOT NULL,
+        line_number    INTEGER NOT NULL);
+    ';
+
     public $tense_type = [
         'X',    // all, none, or unknown
         'PRES', // PRESent
@@ -199,6 +230,20 @@ class inflection extends common
         'PERF', // PERFect
         'PLUP', // PLUPerfect
         'FUTP', // FUTure Perfect
+    ];
+
+    public $test_lines = [
+        'ADJ    1 1 NOM S M POS             1 2 us  X A',
+        'ADV        POS                     1 0     X A',
+        'CONJ                               1 0     X A',
+        'INTERJ                             1 0     X A',
+        'N      1 1 NOM S C                 1 1 a   X A',
+        'NUM    1 1 NOM S M CARD            1 2 us  X A',
+        'VPAR   1 0 NOM S X PRES ACTIVE PPL 1 3 ans X A',
+        'PREP       GEN                     1 0     X A',
+        'PRON   1 0 GEN S X                 2 3 jus X A',
+        'SUPINE 0 0 ACC S N                 4 2 um  X A',
+        'V      1 1 PRES ACTIVE IND 2 S     2 2 as  X A',
     ];
 
     /**
@@ -246,50 +291,40 @@ class inflection extends common
         return $inflection;
     }
 
-    public function create_inflection_table()
+    public function gather_endings($inflections)
     {
-        $sql = '
-            DROP TABLE IF EXISTS inflection;
+        $endings = [];
 
-            VACUUM;
+        foreach ($inflections as $inflection) {
+            if ($inflection['ending_size'] == 0) {
+                continue;
+            }
 
-            CREATE TABLE inflection (
-                id             INTEGER PRIMARY KEY AUTOINCREMENT,
-                part_of_speech TEXT NOT NULL,
-                which          INTEGER,
-                variant        INTEGER,
-                cases          TEXT,
-                number         TEXT,
-                gender         TEXT,
-                comparison     TEXT,
-                numeral_sort   TEXT,
-                tense          TEXT,
-                voice          TEXT,
-                mood           TEXT,
-                person         INTEGER,
-                stem_key       INTEGER NOT NULL,
-                ending_size    INTEGER NOT NULL,
-                ending         TEXT,
-                age            TEXT NOT NULL,
-                frequency      TEXT NOT NULL,
-                line_number    INTEGER NOT NULL
-            );
-        ';
+            $ending = $inflection['ending'];
 
-        $this->pdo->exec($sql);
-    }
-
-    public function load_inflections($lines = null)
-    {
-        if (! $lines) {
-            $lines = $this->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
+            if (! isset($endings[$ending])) {
+                $endings[$ending] = [
+                    'ending'   => $ending,
+                    'length'   => strlen($ending),
+                    'reversed' => strrev($ending),
+                ];
+            }
         }
 
-        $inflections = $this->parse_entries($lines);
-        $this->create_inflection_table();
-        $this->insert_entries('inflection', $inflections);
+        return $endings;
+    }
 
-        return $inflections;
+    public function load_inflections()
+    {
+        $lines = $this->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
+
+        $inflections = $this->parse_entries($lines);
+        $this->insert_entries('inflection', $this->table_inflection, $inflections);
+
+        $endings = $this->gather_endings($inflections);
+        $this->insert_entries('ending', $this->table_ending, $endings);
+
+        return count($inflections);
     }
 
     public function parse_entry($line, $inflection_id)

@@ -68,6 +68,8 @@ class common
 
     public $pdo;
 
+    public $test_lines;
+
     public $variant_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     public $which_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -122,8 +124,11 @@ class common
         $this->pdo->exec($sql);
     }
 
-    public function insert_entries($table_name, $entries)
+    public function insert_entries($table_name, $table_create, $entries)
     {
+        $this->pdo->exec("DROP TABLE IF EXISTS $table_name");
+        $this->pdo->exec('VACUUM');
+        $this->pdo->exec($table_create);
         $this->pdo->exec('BEGIN TRANSACTION');
 
         foreach ($entries as $entry) {
@@ -183,6 +188,20 @@ class common
         $message = vprintf($format, $args);
 
         return $message;
+    }
+
+    public function test_parsing()
+    {
+        $entries = [];
+
+        foreach ($this->test_lines as $index => $line) {
+            $entries[] = [
+                'line'  => $line,
+                'entry' => $this->parse_entry($line, $index + 1),
+            ];
+        }
+
+        return $entries;
     }
 
     public function validate_entry_value($attribute, $value)
