@@ -136,6 +136,7 @@ class common
     public function parse_entries($lines)
     {
         $entries = [];
+        $entry_id = 0;
 
         foreach ($lines as $index => $line) {
             list($line) = explode('--', $line);
@@ -145,14 +146,15 @@ class common
             }
 
             $this->line_number = $index + 1;
+            $entry_id++;
 
-            $entries[] = $this->parse_entry($line);
+            $entries[] = $this->parse_entry($line, $entry_id);
         }
 
         return $entries;
     }
 
-    public function parse_entry($line)
+    public function parse_entry($line, $entry_id)
     {
         throw new Exception(__FUNCTION__ . '() not implemented' );
     }

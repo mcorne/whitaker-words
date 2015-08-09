@@ -7,8 +7,10 @@ class dictionary extends common
     const PART_OF_SPEECH_POSITION = 76;
 
     /**
-     * eg "abact abact                      ADJ 1 1 POS X X X E S driven away/off/back;"
-     * eg "abject abject abjecti abjectissi ADJ 1 1 X   X X X B L downcast, dejected;"
+     * eg "abact abact                      ADJ 1 1 POS   X X X E S driven away/off/back;"
+     * eg "abject abject abjecti abjectissi ADJ 1 1 X     X X X B L downcast, dejected;"
+     * eg "adinstar                         ADJ 9 9 POS   X X X E S like, after the fashion of;"
+     * eg "adpri                            ADJ 0 0 SUPER X X X E O very first, most excellent;"
      * @var array
      */
     public $adjective_attributes = [
@@ -388,7 +390,7 @@ class dictionary extends common
             VACUUM;
 
             CREATE TABLE dictionary (
-                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                id             INTEGER PRIMARY KEY,
                 stem1          TEXT NOT NULL,
                 stem2          TEXT,
                 stem3          TEXT,
@@ -411,6 +413,25 @@ class dictionary extends common
                 source         TEXT NOT NULL,
                 meaning        TEXT NOT NULL,
                 line_number    INTEGER NOT NULL
+            );
+        ';
+
+        $this->pdo->exec($sql);
+    }
+
+    public function create_stem_table()
+    {
+        $sql = '
+            DROP TABLE IF EXISTS stem;
+
+            VACUUM;
+
+            CREATE TABLE stem (
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                stem           TEXT NOT NULL,
+                part_of_speech TEXT NOT NULL,
+                key            INTEGER,
+                entry_id       INTEGER
             );
         ';
 
@@ -460,6 +481,57 @@ class dictionary extends common
         return $stems;
     }
 
+    /**
+     *
+     * @param array $entries
+     * @return array
+     * @todo handle the first stemlist.gen entry with an empty stem "V 5 1 TO_BE 2 39338"
+     */
+    public function gather_stems($entries)
+    {
+        $stems = [];
+
+        foreach ($entries as $entry) {
+            if ($entry['stem1'] != 'zzz') {
+                $stems[] = [
+                    'stem'           => $entry['stem1'],
+                    'part_of_speech' => $entry['part_of_speech'],
+                    'key'            => 1,
+                    'entry_id'       => $entry['id'],
+                ];
+            }
+
+            if (isset($entry['stem2']) and $entry['stem2'] != 'zzz') {
+                $stems[] = [
+                    'stem'           => $entry['stem2'],
+                    'part_of_speech' => $entry['part_of_speech'],
+                    'key'            => 2,
+                    'entry_id'       => $entry['id'],
+                ];
+            }
+
+            if (isset($entry['stem3']) and $entry['stem3'] != 'zzz') {
+                $stems[] = [
+                    'stem'           => $entry['stem3'],
+                    'part_of_speech' => $entry['part_of_speech'],
+                    'key'            => 3,
+                    'entry_id'       => $entry['id'],
+                ];
+            }
+
+            if (isset($entry['stem4']) and $entry['stem4'] != 'zzz') {
+                $stems[] = [
+                    'stem'           => $entry['stem4'],
+                    'part_of_speech' => $entry['part_of_speech'],
+                    'key'            => 4,
+                    'entry_id'       => $entry['id'],
+                ];
+            }
+        }
+
+        return $stems;
+    }
+
     public function load_dictionary($lines = null)
     {
         if (! $lines) {
@@ -470,10 +542,14 @@ class dictionary extends common
         $this->create_dictionary_table();
         $this->insert_entries('dictionary', $entries);
 
+        $this->create_stem_table();
+        $stems = $this->gather_stems($entries);
+        $this->insert_entries('stem', $stems);
+
         return $entries;
     }
 
-    public function parse_entry($line)
+    public function parse_entry($line, $entry_id)
     {
         $part_of_speech = $this->extract_part_of_speech($line);
         $values = $this->split_entry($line);
@@ -492,6 +568,7 @@ class dictionary extends common
         $this->validate_stem_count($entry);
 
         $entry['line_number'] = $this->line_number;
+        $entry['id'] = $entry_id;
 
         return $entry;
     }

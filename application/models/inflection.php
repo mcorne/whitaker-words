@@ -292,7 +292,7 @@ class inflection extends common
         return $inflections;
     }
 
-    public function parse_entry($line)
+    public function parse_entry($line, $inflection_id)
     {
         list($values, $part_of_speech) = $this->split_inflection($line);
 
@@ -311,11 +311,11 @@ class inflection extends common
             $this->validate_ending_size($inflection);
         }
 
-        $entry['part_of_speech'] = $part_of_speech;
-        $entry += $inflection;
-        $entry['line_number'] = $this->line_number;
+        $inflection['part_of_speech'] = $part_of_speech;
+        $inflection['line_number'] = $this->line_number;
+        $inflection['id'] = $inflection_id;
 
-        return $entry;
+        return $inflection;
     }
 
     public function split_inflection($line)
