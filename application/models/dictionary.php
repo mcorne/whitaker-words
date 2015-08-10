@@ -318,41 +318,45 @@ class dictionary extends common
              // Mostly John White of Blitz Latin
     ];
 
-    public $table_dictionary = '
-        CREATE TABLE dictionary (
-        id             INTEGER PRIMARY KEY,
-        stem1          TEXT NOT NULL,
-        stem2          TEXT,
-        stem3          TEXT,
-        stem4          TEXT,
-        part_of_speech TEXT NOT NULL,
-        which          INTEGER,
-        variant        INTEGER,
-        comparison     TEXT,
-        gender         TEXT,
-        noun_kind      TEXT,
-        numeral_sort   TEXT,
-        numeral_value  TEXT,
-        pronoun_kind   TEXT,
-        cases          TEXT,
-        verb_kind      TEXT,
-        age            TEXT NOT NULL,
-        area           TEXT NOT NULL,
-        geography      TEXT NOT NULL,
-        frequency      TEXT NOT NULL,
-        source         TEXT NOT NULL,
-        meaning        TEXT NOT NULL,
-        line_number    INTEGER NOT NULL);
-    ';
+    public $table_dictionary = [
+        'table' => '
+            CREATE TABLE dictionary (
+            id             INTEGER PRIMARY KEY,
+            stem1          TEXT NOT NULL,
+            stem2          TEXT,
+            stem3          TEXT,
+            stem4          TEXT,
+            part_of_speech TEXT NOT NULL,
+            which          INTEGER,
+            variant        INTEGER,
+            comparison     TEXT,
+            gender         TEXT,
+            noun_kind      TEXT,
+            numeral_sort   TEXT,
+            numeral_value  TEXT,
+            pronoun_kind   TEXT,
+            cases          TEXT,
+            verb_kind      TEXT,
+            age            TEXT NOT NULL,
+            area           TEXT NOT NULL,
+            geography      TEXT NOT NULL,
+            frequency      TEXT NOT NULL,
+            source         TEXT NOT NULL,
+            meaning        TEXT NOT NULL,
+            line_number    INTEGER NOT NULL)
+        ',
+    ];
 
-    public $table_stem = '
-        CREATE TABLE stem (
-        id             INTEGER PRIMARY KEY AUTOINCREMENT,
-        stem           TEXT NOT NULL,
-        part_of_speech TEXT NOT NULL,
-        key            INTEGER,
-        entry_id       INTEGER);
-    ';
+    public $table_stem = [
+        'table' => '
+            CREATE TABLE stem (
+            id             INTEGER PRIMARY KEY AUTOINCREMENT,
+            stem           TEXT NOT NULL,
+            part_of_speech TEXT NOT NULL,
+            key            INTEGER,
+            entry_id       INTEGER)
+        ',
+    ];
 
     public $test_lines = [
         'abact              abact                                                    ADJ    1 1 POS          X X X E S driven away/off/back;',
@@ -535,12 +539,12 @@ class dictionary extends common
         $lines = $this->read_lines(__DIR__ . '/../data/DICTLINE.GEN');
 
         $entries = $this->parse_entries($lines);
-        $this->insert_entries('dictionary', $this->table_dictionary, $entries);
+        $count = $this->load_table('dictionary', $this->table_dictionary, $entries);
 
         $stems = $this->gather_stems($entries);
-        $this->insert_entries('stem', $this->table_stem, $stems);
+        $this->load_table('stem', $this->table_stem, $stems);
 
-        return count($entries);
+        return $count;
     }
 
     public function parse_entry($line, $entry_id)

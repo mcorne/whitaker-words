@@ -191,36 +191,41 @@ class inflection extends common
         'frequency',
     ];
 
-    public $table_ending = '
-        CREATE TABLE ending (
-        id       INTEGER PRIMARY KEY AUTOINCREMENT,
-        ending   TEXT NOT NULL,
-        length   INTEGER NOT NULL,
-        reversed TEXT NOT NULL);
-    ';
+    public $table_ending = [
+        'table' => '
+            CREATE TABLE ending (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            ending   TEXT NOT NULL,
+            length   INTEGER NOT NULL,
+            reversed TEXT NOT NULL)
+        ',
+    ];
 
-    public $table_inflection = '
-        CREATE TABLE inflection (
-        id             INTEGER PRIMARY KEY,
-        part_of_speech TEXT NOT NULL,
-        which          INTEGER,
-        variant        INTEGER,
-        cases          TEXT,
-        number         TEXT,
-        gender         TEXT,
-        comparison     TEXT,
-        numeral_sort   TEXT,
-        tense          TEXT,
-        voice          TEXT,
-        mood           TEXT,
-        person         INTEGER,
-        stem_key       INTEGER NOT NULL,
-        ending_size    INTEGER NOT NULL,
-        ending         TEXT,
-        age            TEXT NOT NULL,
-        frequency      TEXT NOT NULL,
-        line_number    INTEGER NOT NULL);
-    ';
+    public $table_inflection = [
+        'table' => '
+            CREATE TABLE inflection (
+            id             INTEGER PRIMARY KEY,
+            part_of_speech TEXT NOT NULL,
+            which          INTEGER,
+            variant        INTEGER,
+            cases          TEXT,
+            number         TEXT,
+            gender         TEXT,
+            comparison     TEXT,
+            numeral_sort   TEXT,
+            tense          TEXT,
+            voice          TEXT,
+            mood           TEXT,
+            person         INTEGER,
+            stem_key       INTEGER NOT NULL,
+            ending_size    INTEGER NOT NULL,
+            ending         TEXT,
+            age            TEXT NOT NULL,
+            frequency      TEXT NOT NULL,
+            line_number    INTEGER NOT NULL)
+        ',
+        'index' => 'CREATE INDEX "noun" ON inflection (part_of_speech, which, variant, gender)', // TODO: fix or add index for other part of speech, see inflect_*()
+    ];
 
     public $tense_type = [
         'X',    // all, none, or unknown
@@ -319,12 +324,12 @@ class inflection extends common
         $lines = $this->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
 
         $inflections = $this->parse_entries($lines);
-        $this->insert_entries('inflection', $this->table_inflection, $inflections);
+        $count = $this->load_table('inflection', $this->table_inflection, $inflections);
 
         $endings = $this->gather_endings($inflections);
-        $this->insert_entries('ending', $this->table_ending, $endings);
+        $this->load_table('ending', $this->table_ending, $endings);
 
-        return count($inflections);
+        return $count;
     }
 
     public function parse_entry($line, $inflection_id)

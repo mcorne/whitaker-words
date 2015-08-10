@@ -124,18 +124,30 @@ class common
         $this->pdo->exec($sql);
     }
 
-    public function insert_entries($table_name, $table_create, $entries)
+    public function insert_entries($table_name = null, $entries = null)
     {
-        $this->pdo->exec("DROP TABLE IF EXISTS $table_name");
-        $this->pdo->exec('VACUUM');
-        $this->pdo->exec($table_create);
-        $this->pdo->exec('BEGIN TRANSACTION');
-
         foreach ($entries as $entry) {
             $this->insert_entry($table_name, $entry);
         }
 
+        return count($entries);
+    }
+
+    public function load_table($table_name, $table_create, $entries = null)
+    {
+        $this->pdo->exec("DROP TABLE IF EXISTS $table_name");
+        $this->pdo->exec('VACUUM');
+        $this->pdo->exec($table_create['table']);
+        
+        $this->pdo->exec('BEGIN TRANSACTION');
+        $count = $this->insert_entries($table_name, $entries);
         $this->pdo->exec('COMMIT TRANSACTION');
+
+        if (isset($table_create['index'])) {
+            $this->pdo->exec($table_create['index']);
+        }
+
+        return $count;
     }
 
     public function parse_entries($lines)
