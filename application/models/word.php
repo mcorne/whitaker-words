@@ -92,16 +92,19 @@ class word extends common
                 case 'PREP':
                 case 'PRON':
                 case 'V': // including SUPINE, VPAR
+                    $words = null;
                     break;
 
                 default:
                     throw new Exception("Invalid part of speech: {$entry['part_of_speech']} in entry id: {$entry['id']}");
             }
 
-            $word_count += parent::insert_entries('word', $words);
+            if ($words) {
+                $word_count += parent::insert_entries('word', $words);
+            }
 
             if ($word_count == 10000) {
-                break; // TODO: remove
+                // break; // TODO: remove
             }
         }
 
