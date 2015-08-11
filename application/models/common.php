@@ -76,8 +76,6 @@ class common
 
     public function __construct()
     {
-        $this->flip_properties();
-
         $this->connect_to_database();
     }
 
@@ -138,7 +136,7 @@ class common
         $this->pdo->exec("DROP TABLE IF EXISTS $table_name");
         $this->pdo->exec('VACUUM');
         $this->pdo->exec($table_create['table']);
-        
+
         $this->pdo->exec('BEGIN TRANSACTION');
         $count = $this->insert_entries($table_name, $entries);
         $this->pdo->exec('COMMIT TRANSACTION');

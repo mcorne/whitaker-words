@@ -408,8 +408,10 @@ class dictionary extends common
 
     public function __construct()
     {
-        $this->numeral_value_type = range(0, 1000);
         parent::__construct();
+        
+        $this->numeral_value_type = range(0, 1000);
+        $this->flip_properties();
     }
 
     public function combine_entry_attributes_and_values($attributes, $values)

@@ -214,6 +214,7 @@ class inflection extends common
             frequency      TEXT NOT NULL,
             line_number    INTEGER NOT NULL)
         ',
+        
         'index' => 'CREATE INDEX "noun" ON inflection (part_of_speech, which, variant, gender)', // TODO: fix or add index for other part of speech, see inflect_*()
     ];
 
@@ -265,6 +266,13 @@ class inflection extends common
         'ACTIVE',  // ACTIVE
         'PASSIVE', // PASSIVE
     ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->flip_properties();
+    }
 
     public function combine_inflection_attributes_and_values($attributes, $values, $property)
     {
