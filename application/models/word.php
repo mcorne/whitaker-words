@@ -19,7 +19,7 @@ class word extends common
         'NUM'    => [],
         'PACK'   => [],
         'PREP'   => ['cases'],
-        'PRON'   => [],
+        'PRON'   => ['which', 'variant'],
         'V'      => [],
     ];
 
@@ -64,7 +64,11 @@ class word extends common
             WHERE part_of_speech = "PREP"
             AND cases = "%s"',
 
-        'PRON'   => '',
+        'PRON'   => '
+            SELECT id, ending, stem_key FROM inflection
+            WHERE part_of_speech = "PRON"
+            AND which = %1$d
+            AND (variant = %2$d OR variant = 0)',
 
         'V'      => '',
     ];
