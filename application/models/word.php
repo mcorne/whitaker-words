@@ -38,6 +38,32 @@ class word extends common
         return $this->endings[$key];
     }
 
+    public function inflect_entry($entry)
+    {
+        switch ($entry['part_of_speech']) {
+            case 'N':
+                $words = $this->inflect_noun($entry['id'], $entry['stem1'], $entry['stem2'], $entry['which'], $entry['variant'], $entry['gender']);
+                break;
+
+            case 'ADJ':
+            case 'ADV':
+            case 'CONJ':
+            case 'INTERJ':
+            case 'NUM':
+            case 'PACK': // see pronoun
+            case 'PREP':
+            case 'PRON':
+            case 'V': // including SUPINE, VPAR
+                $words = null;
+                break;
+
+            default:
+                throw new Exception("Invalid part of speech: {$entry['part_of_speech']} in entry id: {$entry['id']}");
+        }
+
+        return $words;
+    }
+
     public function inflect_noun($entry_id, $stem1, $stem2, $which, $variant, $gender)
     {
         $endings = $this->get_noun_endings($which, $variant, $gender);
@@ -73,38 +99,12 @@ class word extends common
     public function insert_entries($table_name = null, $entries = null)
     {
         $sql = "SELECT * from dictionary";
-        // $sql = "SELECT * from dictionary WHERE id = 33805"; TODO: remove
         $statement = $this->pdo->query($sql);
         $word_count = 0;
 
         while ($entry = $statement->fetch(PDO::FETCH_ASSOC)) {
-            switch ($entry['part_of_speech']) {
-                case 'N':
-                    $words = $this->inflect_noun($entry['id'], $entry['stem1'], $entry['stem2'], $entry['which'], $entry['variant'], $entry['gender']);
-                    break;
-
-                case 'ADJ':
-                case 'ADV':
-                case 'CONJ':
-                case 'INTERJ':
-                case 'NUM':
-                case 'PACK': // see pronoun
-                case 'PREP':
-                case 'PRON':
-                case 'V': // including SUPINE, VPAR
-                    $words = null;
-                    break;
-
-                default:
-                    throw new Exception("Invalid part of speech: {$entry['part_of_speech']} in entry id: {$entry['id']}");
-            }
-
-            if ($words) {
+            if ($words = $this->inflect_entry($entry)) {
                 $word_count += parent::insert_entries('word', $words);
-            }
-
-            if ($word_count == 10000) {
-                // break; // TODO: remove
             }
         }
 
