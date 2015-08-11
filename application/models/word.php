@@ -16,7 +16,7 @@ class word extends common
         'CONJ'   => [],
         'INTERJ' => [],
         'N'      => ['which', 'variant', 'gender'],
-        'NUM'    => [],
+        'NUM'    => ['which', 'variant', 'numeral_sort'],
         'PACK'   => [],
         'PREP'   => ['cases'],
         'PRON'   => ['which', 'variant'],
@@ -55,7 +55,12 @@ class word extends common
             AND which = %1$d
             AND (variant = %2$d OR variant = 0)
             AND (gender = "%3$s" OR gender = "C" OR gender = "X")',
-        'NUM'    => '',
+        'NUM'    => '
+            SELECT id, ending, stem_key FROM inflection
+            WHERE part_of_speech = "NUM"
+            AND (which = %1$d OR which = 0)
+            AND (variant = %2$d OR variant = 0)
+            AND (numeral_sort = "%3$s" OR "%3$s" = "X")',
 
         'PACK'   => '',
 
@@ -148,7 +153,22 @@ class word extends common
             if ($entry['comparison'] == 'COMP') {
                 $entry['stem3'] = $entry['stem1'];
                 $entry['stem1'] = null;
+
             } elseif ($entry['comparison'] == 'SUPER') {
+                $entry['stem4'] = $entry['stem1'];
+                $entry['stem1'] = null;
+            }
+
+        } elseif ($entry['part_of_speech'] == 'NUM') {
+            if ($entry['numeral_sort'] == 'ORD') {
+                $entry['stem2'] = $entry['stem1'];
+                $entry['stem1'] = null;
+
+            } elseif ($entry['numeral_sort'] == 'DIST') {
+                $entry['stem3'] = $entry['stem1'];
+                $entry['stem1'] = null;
+
+            } elseif ($entry['numeral_sort'] == 'ADVERB') {
                 $entry['stem4'] = $entry['stem1'];
                 $entry['stem1'] = null;
             }

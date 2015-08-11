@@ -4,8 +4,8 @@ require_once 'word.php';
 
 $word = new word();
 
-$inflections = $word->test_inflect_entry(2442);
-print_r($inflections);
+// $inflections = $word->test_inflect_entry(2442);
+// print_r($inflections);
 
-// $count = $word->load_words();
-// echo $count;
+$count = $word->load_words();
+echo $count;
