@@ -5,8 +5,13 @@ class word extends common
 {
     public $endings;
 
+    /**
+     *
+     * @var array
+     * @see self::$inflection_select, the vsprintf() args order must be the same in both arrays
+     */
     public $inflection_attributes = [
-        'ADJ'    => [],
+        'ADJ'    => ['which', 'variant', 'comparison'],
         'ADV'    => ['comparison'],
         'CONJ'   => [],
         'INTERJ' => [],
@@ -18,17 +23,31 @@ class word extends common
         'V'      => [],
     ];
 
+    /**
+     * @var array
+     * @see self::$inflection_attributes, the vsprintf() args order must be the same in both arrays
+     * @see leveraging inflection::$table_inflection['index']
+     */
     public $inflection_select = [
-        'ADJ'    => '',
+        'ADJ'    => '
+            SELECT id, ending, stem_key FROM inflection
+            WHERE part_of_speech = "ADJ"
+            AND (which = %1$d OR which = 0)
+            AND (variant = %2$d OR variant = 0)
+            AND (comparison = "%3$s" OR "%3$s" = "X")',
 
         'ADV'    => '
             SELECT id, ending, stem_key FROM inflection
             WHERE part_of_speech = "ADV"
             AND comparison = "%s"',
 
-        'CONJ'   => '',
+        'CONJ'   => '
+            SELECT id, ending, stem_key FROM inflection
+            WHERE part_of_speech = "CONJ"',
 
-        'INTERJ' => '',
+        'INTERJ' => '
+            SELECT id, ending, stem_key FROM inflection
+            WHERE part_of_speech = "INTERJ"',
 
         'N'      => '
             SELECT id, ending, stem_key FROM inflection
@@ -119,6 +138,21 @@ class word extends common
         return $attributes;
     }
 
+    public function fix_entry($entry)
+    {
+        if ($entry['part_of_speech'] == 'ADJ' and $entry['which'] == 0 and $entry['variant'] == 0) {
+            if ($entry['comparison'] == 'COMP') {
+                $entry['stem3'] = $entry['stem1'];
+                $entry['stem1'] = null;
+            } elseif ($entry['comparison'] == 'SUPER') {
+                $entry['stem4'] = $entry['stem1'];
+                $entry['stem1'] = null;
+            }
+        }
+
+        return $entry;
+    }
+
     public function get_endings($entry)
     {
         $part_of_speech = $entry['part_of_speech'];
@@ -155,6 +189,8 @@ class word extends common
      */
     public function inflect_entry($entry)
     {
+        $entry = $this->fix_entry($entry);
+
         if (! $endings = $this->get_endings($entry)) { // TODO: remove test when all part of speech processed
             return null;
         }
@@ -194,5 +230,19 @@ class word extends common
         $count = $this->load_table('word', $this->table_word);
 
         return $count;
+    }
+
+    public function test_inflect_entry($entry_id)
+    {
+        $sql = "SELECT * from dictionary WHERE id = $entry_id";
+        $statement = $this->pdo->query($sql);
+
+        if (! $entry = $statement->fetch(PDO::FETCH_ASSOC)) {
+            return null;
+        }
+
+        $words = $this->inflect_entry($entry);
+
+        return $words;
     }
 }

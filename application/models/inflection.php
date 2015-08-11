@@ -191,6 +191,11 @@ class inflection extends common
         'frequency',
     ];
 
+    /**
+     *
+     * @var array
+     * @see word::$inflection_select that leverages indexes
+     */
     public $table_inflection = [
         'table' => '
             CREATE TABLE inflection (
@@ -214,8 +219,10 @@ class inflection extends common
             frequency      TEXT NOT NULL,
             line_number    INTEGER NOT NULL)
         ',
-        
-        'index' => 'CREATE INDEX "noun" ON inflection (part_of_speech, which, variant, gender)', // TODO: fix or add index for other part of speech, see inflect_*()
+
+        'index' => '
+            CREATE INDEX "noun"      ON inflection (part_of_speech, which, variant, gender);
+            CREATE INDEX "adjective" ON inflection (part_of_speech, which, variant, comparison);',
     ];
 
     public $tense_type = [

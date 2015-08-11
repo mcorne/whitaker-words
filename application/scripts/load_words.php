@@ -4,7 +4,7 @@ require_once 'word.php';
 
 $word = new word();
 
-// $inflections = $word->inflect_noun(123, 'ros', 'ros', 1, 1, 'F');
+// $inflections = $word->test_inflect_entry(2442);
 // print_r($inflections);
 
 $count = $word->load_words();
