@@ -1,1 +1,0 @@
-@php ada2php.php %*
