@@ -191,16 +191,6 @@ class inflection extends common
         'frequency',
     ];
 
-    public $table_ending = [
-        'table' => '
-            CREATE TABLE ending (
-            id       INTEGER PRIMARY KEY AUTOINCREMENT,
-            ending   TEXT NOT NULL,
-            length   INTEGER NOT NULL,
-            reversed TEXT NOT NULL)
-        ',
-    ];
-
     public $table_inflection = [
         'table' => '
             CREATE TABLE inflection (
@@ -296,38 +286,12 @@ class inflection extends common
         return $inflection;
     }
 
-    public function gather_endings($inflections)
-    {
-        $endings = [];
-
-        foreach ($inflections as $inflection) {
-            if ($inflection['ending_size'] == 0) {
-                continue;
-            }
-
-            $ending = $inflection['ending'];
-
-            if (! isset($endings[$ending])) {
-                $endings[$ending] = [
-                    'ending'   => $ending,
-                    'length'   => strlen($ending),
-                    'reversed' => strrev($ending),
-                ];
-            }
-        }
-
-        return $endings;
-    }
-
     public function load_inflections()
     {
         $lines = $this->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
 
         $inflections = $this->parse_entries($lines);
         $count = $this->load_table('inflection', $this->table_inflection, $inflections);
-
-        $endings = $this->gather_endings($inflections);
-        $this->load_table('ending', $this->table_ending, $endings);
 
         return $count;
     }

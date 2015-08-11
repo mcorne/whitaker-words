@@ -347,17 +347,6 @@ class dictionary extends common
         ',
     ];
 
-    public $table_stem = [
-        'table' => '
-            CREATE TABLE stem (
-            id             INTEGER PRIMARY KEY AUTOINCREMENT,
-            stem           TEXT NOT NULL,
-            part_of_speech TEXT NOT NULL,
-            key            INTEGER,
-            entry_id       INTEGER)
-        ',
-    ];
-
     public $test_lines = [
         'abact              abact                                                    ADJ    1 1 POS          X X X E S driven away/off/back;',
         'abject             abject             abjecti            abjectissi         ADJ    1 1 X            X X X B L downcast, dejected;',
@@ -483,66 +472,12 @@ class dictionary extends common
         return $stems;
     }
 
-    /**
-     *
-     * @param array $entries
-     * @return array
-     * @todo handle the first stemlist.gen entry with an empty stem "V 5 1 TO_BE 2 39338"
-     */
-    public function gather_stems($entries)
-    {
-        $stems = [];
-
-        foreach ($entries as $entry) {
-            if ($entry['stem1'] != 'zzz') {
-                $stems[] = [
-                    'stem'           => $entry['stem1'],
-                    'part_of_speech' => $entry['part_of_speech'],
-                    'key'            => 1,
-                    'entry_id'       => $entry['id'],
-                ];
-            }
-
-            if (isset($entry['stem2']) and $entry['stem2'] != 'zzz') {
-                $stems[] = [
-                    'stem'           => $entry['stem2'],
-                    'part_of_speech' => $entry['part_of_speech'],
-                    'key'            => 2,
-                    'entry_id'       => $entry['id'],
-                ];
-            }
-
-            if (isset($entry['stem3']) and $entry['stem3'] != 'zzz') {
-                $stems[] = [
-                    'stem'           => $entry['stem3'],
-                    'part_of_speech' => $entry['part_of_speech'],
-                    'key'            => 3,
-                    'entry_id'       => $entry['id'],
-                ];
-            }
-
-            if (isset($entry['stem4']) and $entry['stem4'] != 'zzz') {
-                $stems[] = [
-                    'stem'           => $entry['stem4'],
-                    'part_of_speech' => $entry['part_of_speech'],
-                    'key'            => 4,
-                    'entry_id'       => $entry['id'],
-                ];
-            }
-        }
-
-        return $stems;
-    }
-
     public function load_dictionary()
     {
         $lines = $this->read_lines(__DIR__ . '/../data/DICTLINE.GEN');
 
         $entries = $this->parse_entries($lines);
         $count = $this->load_table('dictionary', $this->table_dictionary, $entries);
-
-        $stems = $this->gather_stems($entries);
-        $this->load_table('stem', $this->table_stem, $stems);
 
         return $count;
     }
