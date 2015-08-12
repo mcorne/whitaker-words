@@ -8,7 +8,7 @@ class word extends common
     /**
      *
      * @var array
-     * @see self::$inflection_select, the vsprintf() args order must be the same in both arrays
+     * @see self::$sql_selects, the vsprintf() args order must be the same in both arrays
      */
     public $inflection_attributes = [
         'ADJ'    => ['which', 'variant', 'comparison'],
@@ -17,65 +17,72 @@ class word extends common
         'INTERJ' => [],
         'N'      => ['which', 'variant', 'gender'],
         'NUM'    => ['which', 'variant', 'numeral_sort'],
-        'PACK'   => [],
+        'PACK'   => [], // TODO: see tackon
         'PREP'   => ['cases'],
         'PRON'   => ['which', 'variant'],
-        'V'      => [],
+        'V'      => ['which', 'variant'],
     ];
+
+    public $part_of_speech;
 
     /**
      * @var array
      * @see self::$inflection_attributes, the vsprintf() args order must be the same in both arrays
-     * @see leveraging inflection::$sql_indexes
+     * @see leveraging inflection::$sql_views_and_indexes
      */
-    public $inflection_select = [
+    public $sql_selects = [
         'ADJ'    => '
             SELECT id, ending, stem_key FROM inflection
             WHERE part_of_speech = "ADJ"
             AND (which = %1$d OR which = 0)
             AND (variant = %2$d OR variant = 0)
-            AND (comparison = "%3$s" OR "%3$s" = "X")',
-
+            AND (comparison = "%3$s" OR "%3$s" = "X")
+        ',
         'ADV'    => '
             SELECT id, ending, stem_key FROM inflection
             WHERE part_of_speech = "ADV"
-            AND comparison = "%s"',
-
+            AND comparison = "%s"
+        ',
         'CONJ'   => '
             SELECT id, ending, stem_key FROM inflection
-            WHERE part_of_speech = "CONJ"',
-
+            WHERE part_of_speech = "CONJ"
+        ',
         'INTERJ' => '
             SELECT id, ending, stem_key FROM inflection
-            WHERE part_of_speech = "INTERJ"',
-
+            WHERE part_of_speech = "INTERJ"
+        ',
         'N'      => '
             SELECT id, ending, stem_key FROM inflection
             WHERE part_of_speech = "N"
             AND which = %1$d
             AND (variant = %2$d OR variant = 0)
-            AND (gender = "%3$s" OR gender = "C" OR gender = "X")',
+            AND (gender = "%3$s" OR gender = "C" OR gender = "X")
+        ',
         'NUM'    => '
             SELECT id, ending, stem_key FROM inflection
             WHERE part_of_speech = "NUM"
             AND (which = %1$d OR which = 0)
             AND (variant = %2$d OR variant = 0)
-            AND (numeral_sort = "%3$s" OR "%3$s" = "X")',
-
-        'PACK'   => '',
-
+            AND (numeral_sort = "%3$s" OR "%3$s" = "X")
+        ',
+        'PACK'   => '', // TODO: see tackon
         'PREP'   => '
             SELECT id, ending, stem_key FROM inflection
             WHERE part_of_speech = "PREP"
-            AND cases = "%s"',
-
+            AND cases = "%s"
+        ',
         'PRON'   => '
             SELECT id, ending, stem_key FROM inflection
             WHERE part_of_speech = "PRON"
             AND which = %1$d
-            AND (variant = %2$d OR variant = 0)',
-
-        'V'      => '',
+            AND (variant = %2$d OR variant = 0)
+        ',
+        'V'      => '
+            SELECT id, ending, stem_key FROM inflection
+            WHERE part_of_speech = "V"
+            AND (which = %1$d OR which = 0 AND %1$d != 9)
+            AND (variant = %2$d OR variant = 0)
+        ',
     ];
 
     public $sql_table = '
@@ -211,16 +218,16 @@ class word extends common
             return $this->endings[$key];
         }
 
-        if (! isset($this->inflection_select[$part_of_speech])) {
+        if (! isset($this->sql_selects[$part_of_speech])) {
             throw new Exception("Invalid inflection SQL select: $part_of_speech");
         }
 
-        if (empty($this->inflection_select[$part_of_speech])) {
+        if (empty($this->sql_selects[$part_of_speech])) {
             // not processed yet, temporary, TODO: remove
             return null;
         }
 
-        $sql = vsprintf($this->inflection_select[$part_of_speech], $attributes);
+        $sql = vsprintf($this->sql_selects[$part_of_speech], $attributes);
 
         $statement = $this->pdo->query($sql);
         $this->endings[$key] = $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -256,6 +263,11 @@ class word extends common
     public function insert_entries($table_name = null, $entries = null)
     {
         $sql = "SELECT * from dictionary";
+
+        if ($this->part_of_speech) {
+            $sql .= " WHERE part_of_speech = '$this->part_of_speech'";
+        }
+
         $statement = $this->pdo->query($sql);
         $word_count = 0;
 
@@ -270,10 +282,12 @@ class word extends common
 
     /**
      *
+     * @param string $part_of_speech used only for testing purposes
      * @return int
      */
-    public function load_words()
+    public function load_words($part_of_speech = null)
     {
+        $this->part_of_speech = $part_of_speech;
         $count = $this->load_table('word');
 
         return $count;

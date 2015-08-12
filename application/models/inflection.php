@@ -205,7 +205,7 @@ class inflection extends common
     /**
      *
      * @var string
-     * @see word::$inflection_select that leverages indexes
+     * @see word::$sql_selects that leverages indexes
      */
     public $sql_views_and_indexes = '
         DROP INDEX IF EXISTS inflection_adjective;
