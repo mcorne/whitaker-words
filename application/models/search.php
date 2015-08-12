@@ -6,10 +6,10 @@ class search extends common
     public $sql_select = '
         SELECT
             dictionary.id             AS entry_id,
-            dictionary.stem1          AS entry_stem1,
-            dictionary.stem2          AS entry_stem2,
-            dictionary.stem3          AS entry_stem3,
-            dictionary.stem4          AS entry_stem4,
+            dictionary.stem1,
+            dictionary.stem2,
+            dictionary.stem3,
+            dictionary.stem4,
             dictionary.part_of_speech AS entry_part_of_speech,
             dictionary.which          AS entry_which,
             dictionary.variant        AS entry_variant,
@@ -28,6 +28,7 @@ class search extends common
             dictionary.source         AS entry_source,
             dictionary.meaning        AS entry_meaning,
             dictionary.line_number    AS entry_line_number,
+            inflection.id             AS inflection_id,
             inflection.part_of_speech AS inflection_part_of_speech,
             inflection.which          AS inflection_which,
             inflection.variant        AS inflection_variant,
@@ -40,9 +41,9 @@ class search extends common
             inflection.voice          AS inflection_voice,
             inflection.mood           AS inflection_mood,
             inflection.person         AS inflection_person,
-            inflection.stem_key       AS inflection_stem_key,
-            inflection.ending_size    AS inflection_ending_size,
-            inflection.ending         AS inflection_ending,
+            inflection.stem_key,
+            inflection.ending_size,
+            inflection.ending,
             inflection.age            AS inflection_age,
             inflection.frequency      AS inflection_frequency,
             inflection.line_number    AS inflection_line_number
@@ -96,14 +97,50 @@ class search extends common
         $this->pdo->exec($this->sql_views_and_indexes);
     }
 
+    public function is_valid_inflection($inflection)
+    {
+        if ($inflection['inflection_part_of_speech'] == 'V'      and
+            $inflection['inflection_which']          == 3        and
+            $inflection['inflection_variant']        == 1        and
+            $inflection['inflection_tense']          == 'PRES'   and
+            $inflection['inflection_voice']          == 'ACTIVE' and
+            $inflection['inflection_mood']           == 'IMP'    and
+            $inflection['inflection_person']         == 2        and
+            $inflection['inflection_number']         == 'S'      and
+            $inflection['ending_size']               == 0)
+        {
+            $stem = $this->get_stem($inflection['stem_key'], $inflection, $inflection['inflection_id']);
+
+            if (! preg_match('~(dic|duc|fac|fer)$~', $stem)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function search_word($word)
     {
         $word = $this->pdo->quote($word);
         $sql = sprintf($this->sql_select, $word);
         $statement = $this->pdo->query($sql);
-        $inflection = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $inflections = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $inflections = $this->validate_inflections($inflections);
 
-        return $inflection;
+        return $inflections;
+    }
+
+    public function validate_inflections($inflections)
+    {
+        $valid_inflections = [];
+
+        foreach ($inflections as $inflection) {
+            if ($this->is_valid_inflection($inflection)) {
+                $valid_inflections[] = $inflection;
+            }
+        }
+
+        return $valid_inflections;
     }
 
 }

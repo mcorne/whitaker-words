@@ -131,22 +131,7 @@ class word extends common
         $inflections = [];
 
         foreach ($endings as $ending) {
-            switch ($ending['stem_key']) {
-                case 1:
-                    $stem = $entry['stem1'];
-                    break;
-                case 2:
-                    $stem = $entry['stem2'];
-                    break;
-                case 3:
-                    $stem = $entry['stem3'];
-                    break;
-                case 4:
-                    $stem = $entry['stem4'];
-                    break;
-                default:
-                    throw new Exception("Invalid stem key: {$ending['stem_key']} in inflection id: {$ending['id']}");
-            }
+            $stem = $this->get_stem($ending['stem_key'], $entry, $ending['id']);
 
             if (! $stem) {
                 throw new Exception("Empty stem or invalid stem key: {$ending['stem_key']} in entry id: {$entry['id']}");
