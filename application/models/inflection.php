@@ -172,6 +172,56 @@ class inflection extends common
         'frequency',
     ];
 
+    /**
+     *
+     * @var string
+     */
+    public $sql_table = '
+        DROP TABLE IF EXISTS inflection;
+        VACUUM;
+
+        CREATE TABLE inflection (
+        id             INTEGER PRIMARY KEY,
+        part_of_speech TEXT NOT NULL,
+        which          INTEGER,
+        variant        INTEGER,
+        cases          TEXT,
+        number         TEXT,
+        gender         TEXT,
+        comparison     TEXT,
+        numeral_sort   TEXT,
+        tense          TEXT,
+        voice          TEXT,
+        mood           TEXT,
+        person         INTEGER,
+        stem_key       INTEGER NOT NULL,
+        ending_size    INTEGER NOT NULL,
+        ending         TEXT,
+        age            TEXT NOT NULL,
+        frequency      TEXT NOT NULL,
+        line_number    INTEGER NOT NULL);
+    ';
+
+    /**
+     *
+     * @var string
+     * @see word::$inflection_select that leverages indexes
+     */
+    public $sql_views_and_indexes = '
+        DROP INDEX IF EXISTS inflection_adjective;
+        CREATE INDEX inflection_adjective ON inflection (part_of_speech, which, variant, comparison);
+
+        DROP INDEX IF EXISTS inflection_noun;
+        CREATE INDEX inflection_noun ON inflection (part_of_speech, which, variant, gender);
+
+        DROP VIEW IF EXISTS inflections_by_part_of_speech;
+        CREATE VIEW inflections_by_part_of_speech AS
+        SELECT
+            part_of_speech,
+            count(part_of_speech) AS count
+        FROM inflection group by part_of_speech;
+    ';
+
     public $stem_key_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     /**
@@ -189,40 +239,6 @@ class inflection extends common
         'ending',
         'age',
         'frequency',
-    ];
-
-    /**
-     *
-     * @var array
-     * @see word::$inflection_select that leverages indexes
-     */
-    public $table_inflection = [
-        'table' => '
-            CREATE TABLE inflection (
-            id             INTEGER PRIMARY KEY,
-            part_of_speech TEXT NOT NULL,
-            which          INTEGER,
-            variant        INTEGER,
-            cases          TEXT,
-            number         TEXT,
-            gender         TEXT,
-            comparison     TEXT,
-            numeral_sort   TEXT,
-            tense          TEXT,
-            voice          TEXT,
-            mood           TEXT,
-            person         INTEGER,
-            stem_key       INTEGER NOT NULL,
-            ending_size    INTEGER NOT NULL,
-            ending         TEXT,
-            age            TEXT NOT NULL,
-            frequency      TEXT NOT NULL,
-            line_number    INTEGER NOT NULL)
-        ',
-
-        'index' => '
-            CREATE INDEX "noun"      ON inflection (part_of_speech, which, variant, gender);
-            CREATE INDEX "adjective" ON inflection (part_of_speech, which, variant, comparison);',
     ];
 
     public $tense_type = [
@@ -306,7 +322,7 @@ class inflection extends common
         $lines = $this->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
 
         $inflections = $this->parse_entries($lines);
-        $count = $this->load_table('inflection', $this->table_inflection, $inflections);
+        $count = $this->load_table('inflection', $inflections);
 
         return $count;
     }

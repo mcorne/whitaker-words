@@ -26,7 +26,7 @@ class word extends common
     /**
      * @var array
      * @see self::$inflection_attributes, the vsprintf() args order must be the same in both arrays
-     * @see leveraging inflection::$table_inflection['index']
+     * @see leveraging inflection::$sql_indexes
      */
     public $inflection_select = [
         'ADJ'    => '
@@ -78,16 +78,34 @@ class word extends common
         'V'      => '',
     ];
 
-    public $table_word = [
-        'table' => '
-            CREATE TABLE word (
-            id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            entry_id      INTEGER,
-            inflection_id INTEGER,
-            word          TEXT)',
+    public $sql_table = '
+        DROP TABLE IF EXISTS word;
+        VACUUM;
 
-        'index' => 'CREATE INDEX "words" ON word (word)',
-    ];
+        CREATE TABLE word (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        entry_id      INTEGER,
+        inflection_id INTEGER,
+        word          TEXT);
+    ';
+
+    /**
+     *
+     * @var string
+     */
+    public $sql_views_and_indexes = '
+        DROP INDEX IF EXISTS word_word;
+        CREATE INDEX word_word ON word (word);
+
+        DROP VIEW IF EXISTS words_by_part_of_speech;
+        CREATE VIEW words_by_part_of_speech AS
+        SELECT
+            dictionary.part_of_speech,
+            count(dictionary.part_of_speech) AS count
+        FROM word
+        JOIN dictionary ON dictionary.id = word.entry_id
+        GROUP BY part_of_speech;
+    ';
 
     public function __construct()
     {
@@ -251,7 +269,7 @@ class word extends common
      */
     public function load_words()
     {
-        $count = $this->load_table('word', $this->table_word);
+        $count = $this->load_table('word');
 
         return $count;
     }

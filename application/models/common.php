@@ -68,6 +68,9 @@ class common
 
     public $pdo;
 
+    public $sql_table;
+    public $sql_views_and_indexes;
+
     public $test_lines;
 
     public $variant_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -131,19 +134,15 @@ class common
         return count($entries);
     }
 
-    public function load_table($table_name, $table_create, $entries = null)
+    public function load_table($table_name, $entries = null)
     {
-        $this->pdo->exec("DROP TABLE IF EXISTS $table_name");
-        $this->pdo->exec('VACUUM');
-        $this->pdo->exec($table_create['table']);
+        $this->pdo->exec($this->sql_table);
 
         $this->pdo->exec('BEGIN TRANSACTION');
         $count = $this->insert_entries($table_name, $entries);
         $this->pdo->exec('COMMIT TRANSACTION');
 
-        if (isset($table_create['index'])) {
-            $this->pdo->exec($table_create['index']);
-        }
+        $this->pdo->exec($this->sql_views_and_indexes);
 
         return $count;
     }

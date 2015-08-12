@@ -318,34 +318,48 @@ class dictionary extends common
              // Mostly John White of Blitz Latin
     ];
 
-    public $table_dictionary = [
-        'table' => '
-            CREATE TABLE dictionary (
-            id             INTEGER PRIMARY KEY,
-            stem1          TEXT NOT NULL,
-            stem2          TEXT,
-            stem3          TEXT,
-            stem4          TEXT,
-            part_of_speech TEXT NOT NULL,
-            which          INTEGER,
-            variant        INTEGER,
-            comparison     TEXT,
-            gender         TEXT,
-            noun_kind      TEXT,
-            numeral_sort   TEXT,
-            numeral_value  TEXT,
-            pronoun_kind   TEXT,
-            cases          TEXT,
-            verb_kind      TEXT,
-            age            TEXT NOT NULL,
-            area           TEXT NOT NULL,
-            geography      TEXT NOT NULL,
-            frequency      TEXT NOT NULL,
-            source         TEXT NOT NULL,
-            meaning        TEXT NOT NULL,
-            line_number    INTEGER NOT NULL)
-        ',
-    ];
+    public $sql_table = '
+        DROP TABLE IF EXISTS dictionary;
+        VACUUM;
+
+        CREATE TABLE dictionary (
+        id             INTEGER PRIMARY KEY,
+        stem1          TEXT NOT NULL,
+        stem2          TEXT,
+        stem3          TEXT,
+        stem4          TEXT,
+        part_of_speech TEXT NOT NULL,
+        which          INTEGER,
+        variant        INTEGER,
+        comparison     TEXT,
+        gender         TEXT,
+        noun_kind      TEXT,
+        numeral_sort   TEXT,
+        numeral_value  TEXT,
+        pronoun_kind   TEXT,
+        cases          TEXT,
+        verb_kind      TEXT,
+        age            TEXT NOT NULL,
+        area           TEXT NOT NULL,
+        geography      TEXT NOT NULL,
+        frequency      TEXT NOT NULL,
+        source         TEXT NOT NULL,
+        meaning        TEXT NOT NULL,
+        line_number    INTEGER NOT NULL);
+    ';
+
+    /**
+     *
+     * @var string
+     */
+    public $sql_views_and_indexes = '
+        DROP VIEW IF EXISTS entries_by_part_of_speech;
+        CREATE VIEW entries_by_part_of_speech AS
+        SELECT
+            part_of_speech,
+            count(part_of_speech) AS count
+        FROM dictionary group by part_of_speech;
+    ';
 
     public $test_lines = [
         'abact              abact                                                    ADJ    1 1 POS          X X X E S driven away/off/back;',
@@ -409,7 +423,7 @@ class dictionary extends common
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->numeral_value_type = range(0, 1000);
         $this->flip_properties();
     }
@@ -479,7 +493,7 @@ class dictionary extends common
         $lines = $this->read_lines(__DIR__ . '/../data/DICTLINE.GEN');
 
         $entries = $this->parse_entries($lines);
-        $count = $this->load_table('dictionary', $this->table_dictionary, $entries);
+        $count = $this->load_table('dictionary', $entries);
 
         return $count;
     }
