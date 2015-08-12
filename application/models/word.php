@@ -104,7 +104,12 @@ class word extends common
             count(dictionary.part_of_speech) AS count
         FROM word
         JOIN dictionary ON dictionary.id = word.entry_id
-        GROUP BY part_of_speech;
+        GROUP BY part_of_speech
+        UNION
+        SELECT
+            "-- Total --" AS part_of_speech,
+            count(*) AS count
+        FROM word;
     ';
 
     public function __construct()

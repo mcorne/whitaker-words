@@ -358,7 +358,12 @@ class dictionary extends common
         SELECT
             part_of_speech,
             count(part_of_speech) AS count
-        FROM dictionary group by part_of_speech;
+        FROM dictionary group by part_of_speech
+        UNION
+        SELECT
+            "-- Total --" AS part_of_speech,
+            count(*) AS count
+        FROM dictionary;
     ';
 
     public $test_lines = [

@@ -219,7 +219,12 @@ class inflection extends common
         SELECT
             part_of_speech,
             count(part_of_speech) AS count
-        FROM inflection group by part_of_speech;
+        FROM inflection group by part_of_speech
+        UNION
+        SELECT
+            "-- Total --" AS part_of_speech,
+            count(*) AS count
+        FROM inflection;
     ';
 
     public $stem_key_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
