@@ -1,6 +1,9 @@
 <?php
 require_once 'common.php';
 
+/**
+ * Parsing of the inflection file and loading in the database
+ */
 class inflection extends common
 {
     /**
@@ -75,6 +78,12 @@ class inflection extends common
         'frequency',
     ];
 
+    /**
+     * List of verb moods
+     *
+     * @var array
+     * @source source/inflections_package.ads MOOD_TYPE
+     */
     public $mood_type = [
         'X',   // all, none, or unknown
         'IND', // INDicative
@@ -85,8 +94,11 @@ class inflection extends common
     ];
 
     /**
+     * The noun attributes
+     *
      * eg "N 1 1 NOM S C  1 1 a X A"
      * @var array
+     * @source source/inflections_package.ads NOUN_RECORD
      */
     public $noun_attributes = [
         'which',
@@ -101,6 +113,12 @@ class inflection extends common
         'frequency',
     ];
 
+    /**
+     * List of number types
+     *
+     * @var array
+     * @source source/inflections_package.ads NUMBER_TYPE
+     */
     public $number_type = [
         'X', // all, none, or unknown
         'S', // Singular
@@ -108,8 +126,11 @@ class inflection extends common
     ];
 
     /**
+     * The numeral attributes
+     *
      * eg "NUM 1 1 NOM S M CARD 1 2 us X A"
      * @var array
+     * @source source/inflections_package.ads NUMERAL_RECORD
      */
     public $numeral_attributes = [
         'which',
@@ -126,8 +147,11 @@ class inflection extends common
     ];
 
     /**
+     * The verb participle attributes
+     *
      * eg "VPAR 1 0 NOM S X PRES ACTIVE PPL 1 3 ans X A"
      * @var array
+     * @source source/inflections_package.ads VPAR_RECORD
      */
     public $participle_attributes = [
         'which',
@@ -145,6 +169,12 @@ class inflection extends common
         'frequency',
     ];
 
+    /**
+     * List of parts of speech
+     *
+     * @var array
+     * @source source/inflections_package.ads PART_OF_SPEECH_TYPE
+     */
     public $parts_of_speech = [
         'ADJ'    => 'adjective',
         'ADV'    => 'adverb',
@@ -159,11 +189,20 @@ class inflection extends common
         'VPAR'   => 'participle',
     ];
 
+    /**
+     * List of verb persons
+     *
+     * @var array
+     * @source source/inflections_package.ads PERSON_TYPE
+     */
     public $person_type = [0, 1, 2, 3];
 
     /**
+     * The preposition attributes
+     *
      * eg "PREP GEN 1 0 X A"
      * @var array
+     * @source source/inflections_package.ads PREPOSITION_RECORD
      */
     public $preposition_attributes = [
         'cases',
@@ -174,8 +213,11 @@ class inflection extends common
     ];
 
     /**
+     * The pronoun attributes
+     *
      * eg "PRON 1 0 GEN S X 2 3 jus X A"
      * @var array
+     * @source source/inflections_package.ads PRONOUN_RECORD
      */
     public $pronoun_attributes = [
         'which',
@@ -191,6 +233,7 @@ class inflection extends common
     ];
 
     /**
+     * The inflection table definition
      *
      * @var string
      */
@@ -221,6 +264,7 @@ class inflection extends common
     ';
 
     /**
+     * The inflection views and indexes definition
      *
      * @var string
      * @see word::$sql_selects that leverages indexes
@@ -245,11 +289,20 @@ class inflection extends common
         FROM inflection;
     ';
 
-    public $stem_key_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    /**
+     * List of verb tenses
+     *
+     * @var array
+     * @source source/inflections_package.ads TENSE_TYPE
+     */
+    public $stem_key_type = [1, 2, 3, 4];
 
     /**
+     * The supine attributes
+     *
      * eg "SUPINE 0 0 ACC S N 4 2 um X A"
      * @var array
+     * @source source/inflections_package.ads SUPINE_RECORD
      */
     public $supine_attributes = [
         'which',
@@ -264,6 +317,12 @@ class inflection extends common
         'frequency',
     ];
 
+    /**
+     * List of verb tenses
+     *
+     * @var array
+     * @source source/inflections_package.ads TENSE_TYPE
+     */
     public $tense_type = [
         'X',    // all, none, or unknown
         'PRES', // PRESent
@@ -274,6 +333,11 @@ class inflection extends common
         'FUTP', // FUTure Perfect
     ];
 
+    /**
+     * Inflection parsing basic tests
+     *
+     * @var array
+     */
     public $test_lines = [
         'ADJ    1 1 NOM S M POS             1 2 us  X A',
         'ADV        POS                     1 0     X A',
@@ -289,6 +353,8 @@ class inflection extends common
     ];
 
     /**
+     * The verb attributes
+     *
      * eg "V 1 1 PRES ACTIVE IND  2 S  2 2 as X A"
      * @var array
      */
@@ -307,6 +373,12 @@ class inflection extends common
         'frequency',
     ];
 
+    /**
+     * List of verb voices
+     *
+     * @var array
+     * @source source/inflections_package.ads VOICE_TYPE
+     */
     public $voice_type = [
         'X',       // all, none, or unknown
         'ACTIVE',  // ACTIVE

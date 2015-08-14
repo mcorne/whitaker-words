@@ -116,10 +116,11 @@ class common
     ];
 
     /**
-     * List of parts of speech to be defined in the child class
+     * List of parts of speech
+     *
+     * To be defined in the child class.
      *
      * @var array
-     * @source source/inflections_package.ads PART_OF_SPEECH_TYPE
      */
     public $parts_of_speech;
 
@@ -132,21 +133,27 @@ class common
     public $pdo;
 
     /**
-     * SQL statement to create the main table to be defined in the child class
+     * SQL statement to create the main table
+     *
+     * To be defined in the child class.
      *
      * @var string
      */
     public $sql_table;
 
     /**
-     * SQL statements to create views and indexes to be defined in the child class
+     * SQL statements to create views and indexes
+     *
+     * To be defined in the child class.
      *
      * @var sting
      */
     public $sql_views_and_indexes;
 
     /**
-     * Basic tests to be defined in the child class
+     * Basic tests
+     *
+     * To be defined in the child class.
      *
      * @var array
      */
