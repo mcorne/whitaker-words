@@ -2,7 +2,7 @@
 require_once 'common.php';
 
 /**
- * Parsing of the inflection file and loading in the database
+ * Parsing of the inflection file and loading of the inflections in the database
  */
 class inflection extends common
 {
@@ -334,7 +334,7 @@ class inflection extends common
     ];
 
     /**
-     * Inflection parsing basic tests
+     * Inflection parsing tests
      *
      * @var array
      */
@@ -385,6 +385,9 @@ class inflection extends common
         'PASSIVE', // PASSIVE
     ];
 
+    /**
+     * Flips attribute and type properties
+     */
     public function __construct()
     {
         parent::__construct();
@@ -392,9 +395,19 @@ class inflection extends common
         $this->flip_properties();
     }
 
+    /**
+     * Combines the infection attributes and values
+     *
+     * @param array $attributes
+     * @param array $values
+     * @param string $property
+     * @return array the inflection
+     * @throws Exception
+     */
     public function combine_inflection_attributes_and_values($attributes, $values, $property)
     {
         if (isset($attributes['ending'])) {
+            // an inflection ending is expected
             if (! isset($attributes['ending_size'])) {
                 throw new Exception("Ending size attribute missing in: $property.");
             }
@@ -402,7 +415,7 @@ class inflection extends common
             $ending_size_index = $attributes['ending_size'];
 
             if ($values[$ending_size_index] == 0) {
-                // there is no ending value, removes the ending key
+                // there is actually no ending value, removes the ending key
                 unset($attributes['ending']);
             }
         }
@@ -412,16 +425,27 @@ class inflection extends common
         return $inflection;
     }
 
+    /**
+     * Reads, parses and loads the inflections into the database
+     *
+     * @return int the number of inflections
+     */
     public function load_inflections()
     {
         $lines = $this->read_lines(__DIR__ . '/../data/INFLECTS.LAT');
-
         $inflections = $this->parse_entries($lines);
         $count = $this->load_table('inflection', $inflections);
 
         return $count;
     }
 
+    /**
+     * Parses an inflection
+     *
+     * @param string $line
+     * @param int $inflection_id
+     * @return array the inflection
+     */
     public function parse_entry($line, $inflection_id)
     {
         list($values, $part_of_speech) = $this->split_inflection($line);
@@ -435,6 +459,7 @@ class inflection extends common
             if ($attribute != 'ending') {
                 $this->validate_entry_value($attribute, $value);
             }
+            // else: the ending and size are validated below
         }
 
         if (isset($inflection['ending'])) {
@@ -448,6 +473,12 @@ class inflection extends common
         return $inflection;
     }
 
+    /**
+     * Splits the inflection line into values
+     *
+     * @param string $line
+     * @return array the inflection values and the part of speech
+     */
     public function split_inflection($line)
     {
         $values = preg_split('~ +~', $line, null, PREG_SPLIT_NO_EMPTY);
@@ -458,6 +489,12 @@ class inflection extends common
         return [$values, $part_of_speech];
     }
 
+    /**
+     * Verifies the inflection ending and size match
+     *
+     * @param array $inflection
+     * @throws Exception
+     */
     public function validate_ending_size($inflection)
     {
         $ending_size = strlen($inflection['ending']);

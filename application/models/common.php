@@ -118,7 +118,7 @@ class common
     /**
      * List of parts of speech
      *
-     * To be defined in the child class.
+     * Must be defined in the child class.
      *
      * @var array
      */
@@ -135,7 +135,7 @@ class common
     /**
      * SQL statement to create the main table
      *
-     * To be defined in the child class.
+     * Must be defined in the child class.
      *
      * @var string
      */
@@ -144,7 +144,7 @@ class common
     /**
      * SQL statements to create views and indexes
      *
-     * To be defined in the child class.
+     * To be defined in the child class if needed.
      *
      * @var sting
      */
@@ -153,7 +153,7 @@ class common
     /**
      * Basic tests
      *
-     * To be defined in the child class.
+     * To be defined in the child class if needed.
      *
      * @var array
      */
@@ -189,7 +189,7 @@ class common
      *
      * @param array $attributes
      * @param array $values
-     * @return array
+     * @return array the entry
      * @throws Exception
      */
     public function combine_attributes_and_values($attributes, $values)
@@ -229,18 +229,19 @@ class common
 
         foreach ($properties as $property => $values) {
             if (preg_match('~_(attributes|type)$~', $property)) {
+                // this is an attribute or type property, flips the property
                 $this->$property = array_flip($values);
             }
         }
     }
 
     /**
-     * Returns the entry stem corresponding to inflection stem key
+     * Returns the entry stem corresponding to an inflection stem key
      *
      * @param int $stem_key
      * @param array $entry
      * @param int $inflection_id
-     * @return type
+     * @return string the stem
      * @throws Exception
      */
     public function get_stem($stem_key, $entry, $inflection_id)
@@ -268,11 +269,11 @@ class common
     /**
      * Inserts inflection or dictionary entries, returns the number of entries
      *
-     * This method can be overloaded to handle complex entries, eg word entries
+     * This method can be overloaded to handle entries that need custom processing, eg word entries
      *
      * @param string $table_name
      * @param array $entries
-     * @return int
+     * @return int the number of entries
      * @see word::insert_entries()
      */
     public function insert_entries($table_name = null, $entries = null)
@@ -305,7 +306,7 @@ class common
      *
      * @param string $table_name
      * @param array $entries
-     * @return int
+     * @return int the number of entries
      */
     public function load_table($table_name, $entries = null)
     {
@@ -324,7 +325,7 @@ class common
      * Returns the lines of a file parsed into arrays
      *
      * @param array $lines
-     * @return array
+     * @return array the entries
      */
     public function parse_entries($lines)
     {
@@ -332,9 +333,11 @@ class common
         $entry_id = 0;
 
         foreach ($lines as $index => $line) {
+            // removes ADA-like comments
             list($line) = explode('--', $line);
 
             if (! $line = trim($line)) {
+                // ignores empty lines
                 continue;
             }
 
@@ -348,7 +351,9 @@ class common
     }
 
     /**
-     * Parses an entry, must be implemented in the child class
+     * Parses an entry
+     *
+     * Must be implemented in the child class.
      *
      * @param string $line
      * @param int $entry_id
@@ -363,7 +368,7 @@ class common
      * Reads the lines of a file
      *
      * @param string $filename
-     * @return array
+     * @return array the lines
      * @throws Exception
      */
     public function read_lines($filename)
@@ -378,10 +383,10 @@ class common
     /**
      * Prefixes the error message with the line number
      *
-     * @param string $format
+     * @param string $format the printf() like format
      * @param string $arg1
      * @param string $arg2 etc.
-     * @return string
+     * @return string the error message
      */
     public function set_error_message()
     {
@@ -396,7 +401,7 @@ class common
     /**
      * Returns parsed entries for testing purposes
      *
-     * @return array
+     * @return array the entries
      */
     public function test_parsing()
     {

@@ -273,7 +273,7 @@ class word extends common
      *
      * @param string $table_name unused
      * @param array $entries unused
-     * @return type
+     * @return int
      */
     public function insert_entries($table_name = null, $entries = null)
     {

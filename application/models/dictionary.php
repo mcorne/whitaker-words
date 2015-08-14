@@ -1,17 +1,30 @@
 <?php
 require_once 'common.php';
 
+/**
+ * Parsing of the dictionary file and loading of the entries in the database
+ */
 class dictionary extends common
 {
+    /**
+     * Position of the meaning attribute in a dictionary entry line
+     */
     const MEANING_POSITION        = 110;
+
+    /*
+     * Position of the part of speech in a dictionary entry line
+     */
     const PART_OF_SPEECH_POSITION = 76;
 
     /**
+     * The adjective attributes
+     *
      * eg "abact abact                      ADJ 1 1 POS   X X X E S driven away/off/back;"
      * eg "abject abject abjecti abjectissi ADJ 1 1 X     X X X B L downcast, dejected;"
      * eg "adinstar                         ADJ 9 9 POS   X X X E S like, after the fashion of;"
      * eg "adpri                            ADJ 0 0 SUPER X X X E O very first, most excellent;"
      * @var array
+     * @source source/dictionary_package.ads ADJECTIVE_ENTRY
      */
     public $adjective_attributes = [
         'stem1',
@@ -31,9 +44,12 @@ class dictionary extends common
     ];
 
     /**
+     * The adverb attributes
+     *
      * eg "abdicative                     ADV POS D X X E S negatively;"
      * eg "abjecte abjectius abjectissime ADV X   X X X C L in spiritless manner;"
      * @var array
+     * @source source/dictionary_package.ads ADVERB_ENTRY
      */
     public $adverb_attributes = [
         'stem1',
@@ -50,6 +66,12 @@ class dictionary extends common
         'meaning',
     ];
 
+    /**
+     * List of areas or domains
+     *
+     * @var array
+     * @source source/dictionary_package.ads AREA_TYPE
+     */
     public $area_type = [
         'X', // All or none
         'A', // Agriculture, Flora, Fauna, Land, Equipment, Rural
@@ -66,8 +88,11 @@ class dictionary extends common
     ];
 
     /**
+     * The conjunction attributes
+     *
      * eg "ac CONJ X X X A O and, and also, and besides;"
      * @var array
+     * @source source/dictionary_package.ads CONJUNCTION_ENTRY
      */
     public $conjunction_attributes = [
         'stem1',
@@ -83,6 +108,12 @@ class dictionary extends common
         'meaning',
     ];
 
+    /**
+     * List of geographies or locations
+     *
+     * @var array
+     * @source source/dictionary_package.ads GEO_TYPE
+     */
     public $geography_type = [
         'X', // All or none
         'A', // Africa
@@ -105,8 +136,11 @@ class dictionary extends common
     ];
 
     /**
+     * The interjection attributes
+     *
      * eg "aelinon INTERJ X X X F O exclamation of sorrow;"
      * @var array
+     * @source source/dictionary_package.ads INTERJECTION_ENTRY
      */
     public $interjection_attributes = [
         'stem1',
@@ -123,9 +157,12 @@ class dictionary extends common
     ];
 
     /**
+     * The noun attributes
+     *
      * eg "abac abac N 2 1 M T E E X C E small table for cruets, credence;"
      * eg "Act       N 9 8 N T E E X D E Acts (abbreviation);"
      * @var array
+     * @source source/dictionary_package.ads NOUN_ENTRY
      */
     public $noun_attributes = [
         'stem1',
@@ -145,6 +182,12 @@ class dictionary extends common
         'meaning',
     ];
 
+    /**
+     * List of noun kinds
+     *
+     * @var array
+     * @source source/dictionary_package.ads NOUN_KIND_TYPE
+     */
     public $noun_kind_type = [
         'X', // unknown, nondescript
         'S', // Singular "only"           --  not really used
@@ -159,9 +202,12 @@ class dictionary extends common
     ];
 
     /**
+     * The numeral attributes
+     *
      * eg "amb                                     NUM 1 2 CARD 0   X X X B O both; two of pair;"
      * eg "biscentum biscentesim biscenten biscent NUM 2 0 X    200 X X X C E two hundred;"
      * @var array
+     * @source source/dictionary_package.ads NUMERAL_ENTRY
      */
     public $numeral_attributes = [
         'stem1',
@@ -191,8 +237,11 @@ class dictionary extends common
     public $numeral_value_type;
 
     /**
+     * The packon attributes
+     *
      * eg "qu cu PACK 1 0 REL X X X A X (w/-cumque) who/whatever;"
      * @var array
+     * @source source/dictionary_package.ads PROPACK_ENTRY
      */
     public $packon_attributes = [
         'stem1',
@@ -211,6 +260,12 @@ class dictionary extends common
         'meaning',
     ];
 
+    /**
+     * List of parts of speech
+     *
+     * @var array
+     * @source source/inflections_package.ads PART_OF_SPEECH_TYPE
+     */
     public $parts_of_speech = [
         'ADJ'    => 'adjective',
         'ADV'    => 'adverb',
@@ -225,8 +280,11 @@ class dictionary extends common
     ];
 
     /**
+     * The preposition attributes
+     *
      * eg "ab PREP ABL X X X A O by (agent), from;"
      * @var array
+     * @source source/dictionary_package.ads PREPOSITION_ENTRY
      */
     public $preposition_attributes = [
         'stem1',
@@ -244,8 +302,11 @@ class dictionary extends common
     ];
 
     /**
+     * The pronoun attributes
+     *
      * eg "aliqu alicu PRON 1 0 INDEF X X X A O anyone/anybody/anything;"
      * @var array
+     * @source source/dictionary_package.ads PRONOUN_ENTRY
      */
     public $pronoun_attributes = [
         'stem1',
@@ -264,6 +325,12 @@ class dictionary extends common
         'meaning',
     ];
 
+    /**
+     * List of pronoun kinds
+     *
+     * @var array
+     * @source source/dictionary_package.ads PRONOUN_KIND_TYPE
+     */
     public $pronoun_kind_type = [
         'X',      // unknown, nondescript
         'PERS',   // PERSonal
@@ -276,7 +343,9 @@ class dictionary extends common
     ];
 
     /**
-     * Note on other sources:
+     * List of sources
+     *
+     * Original note (Whitaker's) on other sources:
      * Consulted but used only indirectly
      * Liddell + Scott Greek-English Lexicon (Lid)
      * Oxford English Dictionary 2002 (OED)
@@ -294,6 +363,7 @@ class dictionary extends common
      * indicated SOURCE is a main reference/check point used to derive the entry
      *
      * @var array
+     * @source source/dictionary_package.ads SOURCE_TYPE
      */
     public $source_type = [
         'X', // General or unknown or too common to say
@@ -325,6 +395,11 @@ class dictionary extends common
              // Mostly John White of Blitz Latin
     ];
 
+    /**
+     * The dictionary entry table definition
+     *
+     * string type
+     */
     public $sql_table = '
         DROP TABLE IF EXISTS dictionary;
         VACUUM;
@@ -356,6 +431,7 @@ class dictionary extends common
     ';
 
     /**
+     * The dictionary views and indexes definition
      *
      * @var string
      */
@@ -373,6 +449,11 @@ class dictionary extends common
         FROM dictionary;
     ';
 
+    /**
+     * Dictionary entry parsing tests
+     *
+     * @var array
+     */
     public $test_lines = [
         'abact              abact                                                    ADJ    1 1 POS          X X X E S driven away/off/back;',
         'abject             abject             abjecti            abjectissi         ADJ    1 1 X            X X X B L downcast, dejected;',
@@ -392,9 +473,12 @@ class dictionary extends common
     ];
 
     /**
+     * The verb attributes
+     *
      * eg "abaestu abaestu abaestuav abaestuat V 1 1 INTRANS D X X F S wave down;"
      * eg "cumi                                V 9 9 X       E E Q F E arise;"
      * @var array
+     * @source source/dictionary_package.ads VERB_ENTRY
      */
     public $verb_attributes = [
         'stem1',
@@ -413,6 +497,12 @@ class dictionary extends common
         'meaning',
     ];
 
+    /**
+     * List of verb kinds
+     *
+     * @var array
+     * @source source/dictionary_package.ads VERB_KIND_TYPE
+     */
     public $verb_kind_type = [
         'X',        // all, none, or unknown
         'TO_BE',    // only the verb TO BE (esse)
@@ -432,6 +522,9 @@ class dictionary extends common
                     // having only perfect stem, but with present force
     ];
 
+    /**
+     * Sets numeral values, and flips attribute and type properties
+     */
     public function __construct()
     {
         parent::__construct();
@@ -440,6 +533,17 @@ class dictionary extends common
         $this->flip_properties();
     }
 
+    /**
+     * Combines the dictionary entry attributes and values
+     *
+     *
+     * Removes unused stems.
+     * Note that all stems are added in all item attributes for simplicity.
+     *
+     * @param array $attributes
+     * @param array $values
+     * @return array the dictionary entry
+     */
     public function combine_entry_attributes_and_values($attributes, $values)
     {
         $entry = $this->combine_attributes_and_values($attributes, $values);
@@ -457,6 +561,13 @@ class dictionary extends common
         return $entry;
     }
 
+    /**
+     * Returns the dictionary entry meaning
+     *
+     * @param string $line
+     * @return string the meaning
+     * @throws Exception
+     */
     public function extract_meaning($line)
     {
         $meaning = substr($line, self::MEANING_POSITION);
@@ -469,6 +580,12 @@ class dictionary extends common
         return $meaning;
     }
 
+    /**
+     * Returns the entry attributes excluding the stems and meaning
+     *
+     * @param string $line
+     * @return array the attributes
+     */
     public function extract_other_attributes($line)
     {
         $line_part = substr($line, self::PART_OF_SPEECH_POSITION, self::MEANING_POSITION - self::PART_OF_SPEECH_POSITION);
@@ -477,6 +594,12 @@ class dictionary extends common
         return $other_attributes;
     }
 
+    /**
+     * Returns the part of speech
+     *
+     * @param type $line
+     * @return string the part of speech
+     */
     public function extract_part_of_speech($line)
     {
         $line_without_stems = substr($line, self::PART_OF_SPEECH_POSITION);
@@ -486,6 +609,13 @@ class dictionary extends common
         return $part_of_speech;
     }
 
+    /**
+     * Returns the stems
+     *
+     * @param string $line
+     * @return array the stems
+     * @throws Exception
+     */
     public function extract_stems($line)
     {
         $line_part = substr($line, 0, self::PART_OF_SPEECH_POSITION);
@@ -500,6 +630,11 @@ class dictionary extends common
         return $stems;
     }
 
+    /**
+     * Reads, parses and loads the dictionary entries into the database
+     *
+     * @return int the number of dictionary entries
+     */
     public function load_dictionary()
     {
         $lines = $this->read_lines(__DIR__ . '/../data/DICTLINE.GEN');
@@ -510,6 +645,13 @@ class dictionary extends common
         return $count;
     }
 
+    /**
+     * Parses a dictionary entry
+     *
+     * @param string $line
+     * @param int $entry_id
+     * @return array the dictionary entry
+     */
     public function parse_entry($line, $entry_id)
     {
         $part_of_speech = $this->extract_part_of_speech($line);
@@ -524,6 +666,7 @@ class dictionary extends common
             if (! in_array($attribute, ['stem1', 'stem2', 'stem3', 'stem4', 'part_of_speech', 'meaning'])) {
                 $this->validate_entry_value($attribute, $value);
             }
+            // else: the stems are validated below, the part of speech and meaning are already validated at this point
         }
 
         $this->validate_stem_count($entry);
@@ -534,6 +677,12 @@ class dictionary extends common
         return $entry;
     }
 
+    /**
+     * Splits the dictionary entry line into values
+     *
+     * @param string $line
+     * @return array the dictionary entry values
+     */
     public function split_entry($line)
     {
         $values = array_merge($this->extract_stems($line), $this->extract_other_attributes($line));
@@ -544,6 +693,12 @@ class dictionary extends common
         return $values;
     }
 
+    /**
+     * Verifies the number of stems is consistent with the part of speech
+     *
+     * @param array $entry
+     * @throws Exception
+     */
     public function validate_stem_count($entry)
     {
         switch ($entry['part_of_speech']) {
