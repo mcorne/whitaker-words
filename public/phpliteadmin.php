@@ -2118,14 +2118,17 @@ else //user is authorized - display the main application
                         $field_index = str_replace(" ","_",$field);
                         $operator = $_POST[$field_index.":operator"];
                         $value = $_POST[$field_index];
+                        
                         if ($operator == 'IS NULL' or $operator == 'IS NOT NULL') {
                             $arr[$j++] = $db->quote_id($field) . " " . $operator;
+
                         } elseif ($operator == 'IN' or $operator == 'NOT IN') {
                             $value = trim($value, '() ');
                             $values = preg_split('/[ ,]+/', $value, -1, PREG_SPLIT_NO_EMPTY);
                             $values = array_map([$db, 'quote'], $values);
                             $value = implode(', ', $values);
                             $arr[$j++] = $db->quote_id($field) . " " . $operator . '(' . $value . ')';
+
                         } elseif($value!="" || $operator=="!= ''" || $operator=="= ''") {
                             if($operator=="= ''" || $operator=="!= ''")
                                 $arr[$j] = $db->quote_id($field)." ".$operator;
