@@ -17,10 +17,11 @@ class word extends common
         'INTERJ' => [],
         'N'      => ['which', 'variant', 'gender'],
         'NUM'    => ['which', 'variant', 'numeral_sort'],
-        'PACK'   => [], // TODO: see tackon
         'PREP'   => ['cases'],
         'PRON'   => ['which', 'variant'],
+        'SUPINE' => ['which'],
         'V'      => ['which', 'variant'],
+        'VPAR'   => ['which', 'variant'],
     ];
 
     public $part_of_speech;
@@ -65,7 +66,6 @@ class word extends common
             AND (variant = %2$d OR variant = 0)
             AND (numeral_sort = "%3$s" OR "%3$s" = "X")
         ',
-        'PACK'   => '', // TODO: see tackon
         'PREP'   => '
             SELECT id, ending, stem_key FROM inflection
             WHERE part_of_speech = "PREP"
@@ -77,9 +77,20 @@ class word extends common
             AND which = %1$d
             AND (variant = %2$d OR variant = 0)
         ',
+        'SUPINE' => '
+            SELECT id, ending, stem_key FROM inflection
+            WHERE part_of_speech = "SUPINE"
+            AND %1$d != 9
+        ',
         'V'      => '
             SELECT id, ending, stem_key FROM inflection
             WHERE part_of_speech = "V"
+            AND (which = %1$d OR which = 0 AND %1$d != 9)
+            AND (variant = %2$d OR variant = 0)
+        ',
+        'VPAR'   => '
+            SELECT id, ending, stem_key FROM inflection
+            WHERE part_of_speech = "VPAR"
             AND (which = %1$d OR which = 0 AND %1$d != 9)
             AND (variant = %2$d OR variant = 0)
         ',
@@ -107,10 +118,10 @@ class word extends common
         DROP VIEW IF EXISTS words_by_part_of_speech;
         CREATE VIEW words_by_part_of_speech AS
         SELECT
-            dictionary.part_of_speech,
-            count(dictionary.part_of_speech) AS count
+            inflection.part_of_speech,
+            count(inflection.part_of_speech) AS count
         FROM word
-        JOIN dictionary ON dictionary.id = word.entry_id
+        JOIN inflection ON inflection.id = word.inflection_id
         GROUP BY part_of_speech
         UNION
         SELECT
@@ -164,14 +175,18 @@ class word extends common
 
     public function fix_entry($entry)
     {
-        if ($entry['part_of_speech'] == 'ADJ' and $entry['which'] == 0 and $entry['variant'] == 0) {
-            if ($entry['comparison'] == 'COMP') {
-                $entry['stem3'] = $entry['stem1'];
-                $entry['stem1'] = null;
+        if ($entry['part_of_speech'] == 'ADJ') {
+            if ($entry['which'] == 0) {
+                if ($entry['variant'] == 0) {
+                    if ($entry['comparison'] == 'COMP') {
+                        $entry['stem3'] = $entry['stem1'];
+                        $entry['stem1'] = null;
 
-            } elseif ($entry['comparison'] == 'SUPER') {
-                $entry['stem4'] = $entry['stem1'];
-                $entry['stem1'] = null;
+                    } elseif ($entry['comparison'] == 'SUPER') {
+                        $entry['stem4'] = $entry['stem1'];
+                        $entry['stem1'] = null;
+                    }
+                }
             }
 
         } elseif ($entry['part_of_speech'] == 'NUM') {
@@ -186,6 +201,14 @@ class word extends common
             } elseif ($entry['numeral_sort'] == 'ADVERB') {
                 $entry['stem4'] = $entry['stem1'];
                 $entry['stem1'] = null;
+            }
+
+        } elseif ($entry['part_of_speech'] == 'SUPINE') {
+            if ($entry['which'] == 9) {
+                if ($entry['variant'] == 9) {
+                    $entry['stem4'] = $entry['stem1'];
+                    $entry['stem1'] = null;
+                }
             }
         }
 
@@ -207,11 +230,6 @@ class word extends common
             throw new Exception("Invalid inflection SQL select: $part_of_speech");
         }
 
-        if (empty($this->sql_selects[$part_of_speech])) {
-            // not processed yet, temporary, TODO: remove
-            return null;
-        }
-
         $sql = vsprintf($this->sql_selects[$part_of_speech], $attributes);
 
         $statement = $this->pdo->query($sql);
@@ -229,14 +247,26 @@ class word extends common
     public function inflect_entry($entry)
     {
         $entry = $this->fix_entry($entry);
-
-        if (! $endings = $this->get_endings($entry)) { // TODO: remove test when all part of speech processed
-            return null;
-        }
-
+        $endings = $this->get_endings($entry);
         $inflections = $this->add_endings($endings, $entry);
 
         return $inflections;
+    }
+
+    public function inflect_insert_entries($entry, $part_of_speech = null)
+    {
+        if ($part_of_speech) {
+            $entry['part_of_speech'] = $part_of_speech;
+        }
+
+        if ($this->part_of_speech and $entry['part_of_speech'] != $this->part_of_speech) {
+            return 0;
+        }
+
+        $words = $this->inflect_entry($entry);
+        $count = parent::insert_entries('word', $words);
+
+        return $count;
     }
 
     /**
@@ -249,16 +279,19 @@ class word extends common
     {
         $sql = "SELECT * from dictionary";
 
-        if ($this->part_of_speech) {
-            $sql .= " WHERE part_of_speech = '$this->part_of_speech'";
-        }
-
         $statement = $this->pdo->query($sql);
         $word_count = 0;
 
         while ($entry = $statement->fetch(PDO::FETCH_ASSOC)) {
-            if ($words = $this->inflect_entry($entry)) { // TODO: remove test when all part of speech processed
-                $word_count += parent::insert_entries('word', $words);
+            if ($entry['part_of_speech'] == 'PACK') { // TODO: remove when packons are handled
+                continue;
+            }
+
+            $word_count += $this->inflect_insert_entries($entry);
+
+            if ($entry['part_of_speech'] == 'V') {
+                $word_count += $this->inflect_insert_entries($entry, 'SUPINE');
+                $word_count += $this->inflect_insert_entries($entry, 'VPAR');
             }
         }
 
