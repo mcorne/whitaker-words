@@ -1,6 +1,17 @@
 <?php
+/**
+ * This class provides basic support to handle the database and the text files.
+ *
+ * The attribute and type properties have the "_attribute" or "_type" suffix.
+ */
 class common
 {
+    /**
+     * List of ages used in inflections and dictionary entries
+     *
+     * @var array
+     * @source source/inflections_package.ads AGE_TYPE
+     */
     public $age_type = [
         'X', //             --  In use throughout the ages/unknown -- the default
         'A', // archaic     --  Very early forms, obsolete by classical times
@@ -13,6 +24,12 @@ class common
         'H', // modern      --  Coined recently, words for new things (19-20)
     ];
 
+    /**
+     * List of Latin cases used in inflections and dictionary entries
+     *
+     * @var array
+     * @source source/inflections_package.ads CASE_TYPE
+     */
     public $cases_type = [
         'X',   // all, none, or unknown
         'NOM', // NOMinative
@@ -24,6 +41,12 @@ class common
         'ACC', // ACCusitive
     ];
 
+    /**
+     * List of comparison types used for adverbs and adjectives in inflections and dictionary entries
+     *
+     * @var array
+     * @source source/inflections_package.ads COMPARISON_TYPE
+     */
     public $comparison_type = [
         'X',     // all, none, or unknown
         'POS',   // POSitive
@@ -31,8 +54,19 @@ class common
         'SUPER', // SUPERlative
     ];
 
-    public $entry_line_numbers;
+    /**
+     * Entry hashes used to spot possible entry duplicates
+     *
+     * @var array
+     */
+    public $entry_hashes;
 
+    /**
+     * List of usage frequencies used in inflections and dictionary entries
+     *
+     * @var array
+     * @source source/inflections_package.ads FREQUENCY_TYPE
+     */
     public $frequency_type = [
         'X', //             --  Unknown or unspecified
         'A', // very freq   --  Very frequent, in all Elementry Latin books
@@ -46,6 +80,12 @@ class common
         'N', // Pliny       --  Things that appear (almost) only in Pliny Natural History
     ];
 
+    /**
+     * List of Latin genders used in inflections and dictionary entries
+     *
+     * @var array
+     * @source source/inflections_package.ads GENDER_TYPE
+     */
     public $gender_type = [
         'X', // all, none, or unknown
         'M', // Masculine
@@ -54,8 +94,19 @@ class common
         'C', // Common (masculine and/or feminine)
     ];
 
+    /**
+     * Current entry line being read
+     *
+     * @var int
+     */
     public $line_number;
 
+    /**
+     * List of numeral types used in inflections and dictionary entries
+     *
+     * @var array
+     * @source source/inflections_package.ads NUMERAL_SORT_TYPE
+     */
     public $numeral_sort_type = [
         'X',      // all, none, or unknown
         'CARD',   // CARDinal
@@ -64,24 +115,76 @@ class common
         'ADVERB', // numeral ADVERB
     ];
 
+    /**
+     * List of parts of speech to be defined in the child class
+     *
+     * @var array
+     * @source source/inflections_package.ads PART_OF_SPEECH_TYPE
+     */
     public $parts_of_speech;
 
+    /**
+     * Database PDO instance
+     *
+     * @var PDO
+     * @see self::__constructor()
+     */
     public $pdo;
 
+    /**
+     * SQL statement to create the main table to be defined in the child class
+     *
+     * @var string
+     */
     public $sql_table;
+
+    /**
+     * SQL statements to create views and indexes to be defined in the child class
+     *
+     * @var sting
+     */
     public $sql_views_and_indexes;
 
+    /**
+     * Basic tests to be defined in the child class
+     *
+     * @var array
+     */
     public $test_lines;
 
+    /**
+     * List of inflection variants
+     *
+     * @var array
+     * @source source/inflections_package.ads VARIANT_TYPE
+     */
     public $variant_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    /**
+     * List of inflection ID numbers
+     *
+     * @var array
+     * @source source/inflections_package.ads WHICH_TYPE
+     */
 
     public $which_type = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+    /**
+     * Connection to the database
+     */
     public function __construct()
     {
         $this->connect_to_database();
     }
 
+    /**
+     * Combines the infection attributes and values
+     *
+     * @param array $attributes
+     * @param array $values
+     * @return array
+     * @throws Exception
+     */
     public function combine_attributes_and_values($attributes, $values)
     {
         $attributes_count = count($attributes);
@@ -93,17 +196,26 @@ class common
         }
 
         $attributes = array_keys($attributes);
-        $combined = array_combine($attributes, $values);
+        $inflection = array_combine($attributes, $values);
 
-        return $combined;
+        return $inflection;
     }
 
+    /**
+     * Connects to the database
+     */
     public function connect_to_database()
     {
         $dsn = sprintf('sqlite:%s/../data/whitaker.sqlite', __DIR__);
         $this->pdo = new PDO($dsn, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
     }
 
+    /**
+     * Flips the values of attribute and type properties
+     *
+     * Flipped properties allow to test a value with isset(), eg isset($this->cases_type['NOM']).
+     * The attribute and type properties have the "_attribute" or "_type" suffix.
+     */
     public function flip_properties()
     {
         $properties = get_object_vars($this);
@@ -115,6 +227,15 @@ class common
         }
     }
 
+    /**
+     * Returns the entry stem corresponding to inflection stem key
+     *
+     * @param int $stem_key
+     * @param array $entry
+     * @param int $inflection_id
+     * @return type
+     * @throws Exception
+     */
     public function get_stem($stem_key, $entry, $inflection_id)
     {
         switch ($stem_key) {
@@ -137,6 +258,31 @@ class common
         return $stem;
     }
 
+    /**
+     * Inserts inflection or dictionary entries, returns the number of entries
+     *
+     * This method can be overloaded to handle complex entries, eg word entries
+     *
+     * @param string $table_name
+     * @param array $entries
+     * @return int
+     * @see word::insert_entries()
+     */
+    public function insert_entries($table_name = null, $entries = null)
+    {
+        foreach ($entries as $entry) {
+            $this->insert_entry($table_name, $entry);
+        }
+
+        return count($entries);
+    }
+
+    /**
+     * Inserts an entry in a table
+     *
+     * @param string $table_name
+     * @param array $entry
+     */
     public function insert_entry($table_name, $entry)
     {
         $colums = implode(',', array_keys($entry));
@@ -147,15 +293,13 @@ class common
         $this->pdo->exec($sql);
     }
 
-    public function insert_entries($table_name = null, $entries = null)
-    {
-        foreach ($entries as $entry) {
-            $this->insert_entry($table_name, $entry);
-        }
-
-        return count($entries);
-    }
-
+    /**
+     * Loads entries into a table, returns the number of load entries
+     *
+     * @param string $table_name
+     * @param array $entries
+     * @return int
+     */
     public function load_table($table_name, $entries = null)
     {
         $this->pdo->exec($this->sql_table);
@@ -169,6 +313,12 @@ class common
         return $count;
     }
 
+    /**
+     * Returns the lines of a file parsed into arrays
+     *
+     * @param array $lines
+     * @return array
+     */
     public function parse_entries($lines)
     {
         $entries = [];
@@ -190,11 +340,25 @@ class common
         return $entries;
     }
 
+    /**
+     * Parses an entry, must be implemented in the child class
+     *
+     * @param string $line
+     * @param int $entry_id
+     * @throws Exception
+     */
     public function parse_entry($line, $entry_id)
     {
         throw new Exception(__FUNCTION__ . '() not implemented' );
     }
 
+    /**
+     * Reads the lines of a file
+     *
+     * @param string $filename
+     * @return array
+     * @throws Exception
+     */
     public function read_lines($filename)
     {
         if (! $lines = @file($filename)) {
@@ -205,6 +369,7 @@ class common
     }
 
     /**
+     * Prefixes the error message with the line number
      *
      * @param string $format
      * @param string $arg1
@@ -221,6 +386,11 @@ class common
         return $message;
     }
 
+    /**
+     * Returns parsed entries for testing purposes
+     *
+     * @return array
+     */
     public function test_parsing()
     {
         $entries = [];
@@ -235,6 +405,13 @@ class common
         return $entries;
     }
 
+    /**
+     * Verifies an attribute value is in the list of the attribute values
+     *
+     * @param string $attribute
+     * @param string|int $value
+     * @throws Exception
+     */
     public function validate_entry_value($attribute, $value)
     {
         $property = $attribute . '_type';
@@ -251,6 +428,12 @@ class common
         }
     }
 
+    /**
+     * Verifies the part of speech is valid
+     *
+     * @param string $part_of_speech
+     * @throws Exception
+     */
     public function validate_part_of_speech($part_of_speech)
     {
         if (! isset($this->parts_of_speech[$part_of_speech])) {
@@ -259,15 +442,21 @@ class common
         }
     }
 
+    /**
+     * Verifies an entry is unique
+     *
+     * @param array $values
+     * @throws Exception
+     */
     public function validate_unique_entry($values)
     {
         $hash = implode('|', $values);
 
-        if (isset($this->entry_line_numbers[$hash])) {
-            $message = $this->set_error_message('Duplicate entry, same as line: %d', $this->entry_line_numbers[$hash]);
+        if (isset($this->entry_hashes[$hash])) {
+            $message = $this->set_error_message('Duplicate entry, same as line: %d', $this->entry_hashes[$hash]);
             throw new Exception($message);
         }
 
-        $this->entry_line_numbers[$hash] = $this->line_number;
+        $this->entry_hashes[$hash] = $this->line_number;
     }
 }

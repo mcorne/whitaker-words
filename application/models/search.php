@@ -97,22 +97,35 @@ class search extends common
         $this->pdo->exec($this->sql_views_and_indexes);
     }
 
+    /**
+     *
+     * @param array $inflection
+     * @return boolean
+     * @see LIST_SWEEP() in source/list_sweep.adb
+     */
     public function is_valid_inflection($inflection)
     {
-        if ($inflection['inflection_part_of_speech'] == 'V'      and
-            $inflection['inflection_which']          == 3        and
-            $inflection['inflection_variant']        == 1        and
-            $inflection['inflection_tense']          == 'PRES'   and
-            $inflection['inflection_voice']          == 'ACTIVE' and
-            $inflection['inflection_mood']           == 'IMP'    and
-            $inflection['inflection_person']         == 2        and
-            $inflection['inflection_number']         == 'S'      and
-            $inflection['ending_size']               == 0)
-        {
-            $stem = $this->get_stem($inflection['stem_key'], $inflection, $inflection['inflection_id']);
+        if ($inflection['inflection_part_of_speech'] == 'V') {
+            if ($inflection['inflection_which'] == 3) {
+                if ($inflection['inflection_variant'] == 1) {
+                    if ($inflection['inflection_tense'] == 'PRES') {
+                        if ($inflection['inflection_voice'] == 'ACTIVE') {
+                            if ($inflection['inflection_mood'] == 'IMP') {
+                                if ($inflection['inflection_person'] == 2) {
+                                    if ($inflection['inflection_number'] == 'S') {
+                                        if ($inflection['ending_size'] == 0) {
+                                            $stem = $this->get_stem($inflection['stem_key'], $inflection, $inflection['inflection_id']);
 
-            if (! preg_match('~(dic|duc|fac|fer)$~', $stem)) {
-                return false;
+                                            if (! preg_match('~(dic|duc|fac|fer)$~', $stem)) {
+                                                return false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 

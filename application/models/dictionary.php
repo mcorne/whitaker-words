@@ -181,6 +181,13 @@ class dictionary extends common
         'meaning',
     ];
 
+    /**
+     * List of numeral values
+     *
+     * @var array
+     * @see self::__constructor()
+     * @source source/inflections_package.ads NUMERAL_VALUE_TYPE
+     */
     public $numeral_value_type;
 
     /**

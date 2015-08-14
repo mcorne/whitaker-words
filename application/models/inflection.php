@@ -4,8 +4,11 @@ require_once 'common.php';
 class inflection extends common
 {
     /**
+     * The adjective attributes
+     *
      * eg "ADJ 1 1 NOM S M POS 1 2 us X A"
      * @var array
+     * @source source/inflections_package.ads ADJECTIVE_RECORD
      */
     public $adjective_attributes = [
         'which',
@@ -22,8 +25,11 @@ class inflection extends common
     ];
 
     /**
+     * The adverb attributes
+     *
      * eg "ADV POS 1 0 X A"
      * @var array
+     * @source source/inflections_package.ads ADVERB_RECORD
      */
     public $adverb_attributes = [
         'comparison',
@@ -34,8 +40,11 @@ class inflection extends common
     ];
 
     /**
+     * The conjunction attributes
+     *
      * eg "CONJ 1 0 X A"
      * @var array
+     * @source source/inflections_package.ads CONJUNCTION_RECORD
      */
     public $conjunction_attributes = [
         'stem_key',
@@ -44,11 +53,20 @@ class inflection extends common
         'frequency',
     ];
 
+    /**
+     * List of ending sizes
+     *
+     * @var array
+     * @source source/inflections_package.ads ENDING_SIZE_TYPE
+     */
     public $ending_size_type = [0, 1, 2, 3, 4, 5, 6, 7];
 
     /**
+     * The interjection attributes
+     *
      * eg "INTERJ 1 0 X A"
      * @var array
+     * @source source/inflections_package.ads INTERJECTION_RECORD
      */
     public $interjection_attributes = [
         'stem_key',
