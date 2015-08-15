@@ -1,11 +1,16 @@
 <?php
 /**
  * This class provides basic support to handle the database and the text files.
- *
- * The attribute and type properties have the "_attribute" or "_type" suffix.
  */
 class common
 {
+    /**
+     * The "attribute" and "type" related properties have a reserved "_attribute" or "_type" suffix.
+     * These properties are usually flipped in child classes.
+     *
+     * @see self::flip_properties()
+     */
+
     /**
      * List of ages used in inflections and dictionary entries
      *

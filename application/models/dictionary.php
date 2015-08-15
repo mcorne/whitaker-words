@@ -7,6 +7,13 @@ require_once 'common.php';
 class dictionary extends common
 {
     /**
+     * The "attribute" and "type" related properties have a reserved "_attribute" or "_type" suffix.
+     * These properties are usually flipped in child classes.
+     *
+     * @see parent::flip_properties()
+     */
+
+    /**
      * Position of the meaning attribute in a dictionary entry line
      */
     const MEANING_POSITION        = 110;
@@ -398,7 +405,7 @@ class dictionary extends common
     /**
      * The dictionary entry table definition
      *
-     * string type
+     * @var string
      */
     public $sql_table = '
         DROP TABLE IF EXISTS dictionary;

@@ -7,6 +7,13 @@ require_once 'common.php';
 class inflection extends common
 {
     /**
+     * The "attribute" and "type" related properties have a reserved "_attribute" or "_type" suffix.
+     * These properties are usually flipped in child classes.
+     *
+     * @see parent::flip_properties()
+     */
+    
+    /**
      * The adjective attributes
      *
      * eg "ADJ 1 1 NOM S M POS 1 2 us X A"

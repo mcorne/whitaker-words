@@ -1,14 +1,25 @@
 <?php
 require_once 'common.php';
 
+/**
+ * Creation and loading of all the inflected words in the database
+ */
 class word extends common
 {
+    /**
+     * Endings details cache
+     *
+     * @var array
+     * @see self::get_endings()
+     */
     public $endings;
 
     /**
+     * Inflection attributes used in dictionary entries
      *
      * @var array
      * @see self::$sql_selects, the vsprintf() args order must be the same in both arrays
+     * @see self::__construct(), the attributes are flipped for conveniance
      */
     public $inflection_attributes = [
         'ADJ'    => ['which', 'variant', 'comparison'],
@@ -24,12 +35,22 @@ class word extends common
         'VPAR'   => ['which', 'variant'],
     ];
 
+    /**
+     * The part of speech for which the inflected words are created
+     *
+     * The default is null, meaning all parts of speech.
+     * This feature is only used for development purposes.
+     *
+     * @var string
+     */
     public $part_of_speech;
 
     /**
+     * The select statements used to extract inflection details
+     *
      * @var array
      * @see self::$inflection_attributes, the vsprintf() args order must be the same in both arrays
-     * @see leveraging inflection::$sql_views_and_indexes
+     * @see inflection::$sql_views_and_indexes, the select statements leverage indexes
      */
     public $sql_selects = [
         'ADJ'    => '
@@ -96,6 +117,11 @@ class word extends common
         ',
     ];
 
+    /**
+     * The inflected words table definition
+     *
+     * @var string
+     */
     public $sql_table = '
         DROP TABLE IF EXISTS word;
         VACUUM;
@@ -108,6 +134,7 @@ class word extends common
     ';
 
     /**
+     * The inflected words views and indexes definition
      *
      * @var string
      */
@@ -130,6 +157,9 @@ class word extends common
         FROM word;
     ';
 
+    /**
+     * Flips the inflection attributes
+     */
     public function __construct()
     {
         parent::__construct();
@@ -137,6 +167,12 @@ class word extends common
         $this->inflection_attributes = array_map('array_flip', $this->inflection_attributes);
     }
 
+    /**
+     * @param array $endings
+     * @param tarrayype $entry
+     * @return array
+     * @throws Exception
+     */
     public function add_endings($endings, $entry)
     {
         $inflections = [];
