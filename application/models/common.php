@@ -1,6 +1,6 @@
 <?php
 /**
- * This class provides basic support to handle the database and the text files.
+ * Basic support to handle the database and the text files.
  */
 class common
 {
@@ -272,7 +272,7 @@ class common
     }
 
     /**
-     * Inserts inflection or dictionary entries, returns the number of entries
+     * Inserts inflection or dictionary entries in the table
      *
      * This method can be overloaded to handle entries that need custom processing, eg word entries
      *
@@ -291,7 +291,7 @@ class common
     }
 
     /**
-     * Inserts an entry in a table
+     * Inserts the entry inflected words in the table
      *
      * @param string $table_name
      * @param array $entry
@@ -307,7 +307,7 @@ class common
     }
 
     /**
-     * Loads entries into a table, returns the number of load entries
+     * Loads entries into a table
      *
      * @param string $table_name
      * @param array $entries

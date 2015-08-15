@@ -4,5 +4,4 @@ require_once 'search.php';
 
 $search = new search();
 // $search->load_search();
-$inflection = $search->search_word('illud');
-print_r($inflection);
+print_r($search->search_word('illud'));

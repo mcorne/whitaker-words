@@ -12,7 +12,7 @@ class inflection extends common
      *
      * @see parent::flip_properties()
      */
-    
+
     /**
      * The adjective attributes
      *
@@ -433,7 +433,7 @@ class inflection extends common
     }
 
     /**
-     * Reads, parses and loads the inflections into the database
+     * Reads, parses and loads the inflections in the database
      *
      * @return int the number of inflections
      */

@@ -46,7 +46,7 @@ class word extends common
     public $part_of_speech;
 
     /**
-     * The select statements used to extract inflection details
+     * The select statements to extract inflection details
      *
      * @var array
      * @see self::$inflection_attributes, the vsprintf() args order must be the same in both arrays
@@ -168,9 +168,11 @@ class word extends common
     }
 
     /**
+     * Adds all possible endings to the dictionary entry
+     *
      * @param array $endings
-     * @param tarrayype $entry
-     * @return array
+     * @param array $entry
+     * @return array the entry inflections
      * @throws Exception
      */
     public function add_endings($endings, $entry)
@@ -185,6 +187,7 @@ class word extends common
             }
 
             if ($stem == 'zzz') {
+                // this is a stem not to be used, no inflection
                 continue;
             }
 
@@ -198,6 +201,14 @@ class word extends common
         return $inflections;
     }
 
+    /**
+     * Extracts the entry attributes to be used to get the possible inflections
+     *
+     * @param string $part_of_speech
+     * @param array $entry
+     * @return array a sub set of the entry attributes
+     * @throws Exception
+     */
     public function extract_attributes($part_of_speech, $entry)
     {
         if (! isset($this->inflection_attributes[$part_of_speech])) {
@@ -209,6 +220,14 @@ class word extends common
         return $attributes;
     }
 
+    /**
+     * Fixes the entry
+     *
+     * Sets the appropriate stem for some inflection.
+     *
+     * @param array $entry
+     * @return array the entry fixed
+     */
     public function fix_entry($entry)
     {
         if ($entry['part_of_speech'] == 'ADJ') {
@@ -251,6 +270,13 @@ class word extends common
         return $entry;
     }
 
+    /**
+     * Returns the entry possible endings
+     *
+     * @param array $entry
+     * @return array arrays of id, ending and stem_key
+     * @throws Exception
+     */
     public function get_endings($entry)
     {
         $part_of_speech = $entry['part_of_speech'];
@@ -275,20 +301,28 @@ class word extends common
     }
 
     /**
+     * Creates all possible inflections for the entry
      *
      * @param array $entry
-     * @return array
+     * @return array the inflected words
      * @throws Exception
      */
     public function inflect_entry($entry)
     {
         $entry = $this->fix_entry($entry);
         $endings = $this->get_endings($entry);
-        $inflections = $this->add_endings($endings, $entry);
+        $words = $this->add_endings($endings, $entry);
 
-        return $inflections;
+        return $words;
     }
 
+    /**
+     * Inflects a dictionary entry, and inserts the inflected words in the table
+     *
+     * @param array $entry
+     * @param string $part_of_speech used only for testing purposes
+     * @return int the number of inflected words
+     */
     public function inflect_insert_entries($entry, $part_of_speech = null)
     {
         if ($part_of_speech) {
@@ -306,10 +340,11 @@ class word extends common
     }
 
     /**
+     * Inflects dictionary entries, and inserts inflected words in the table
      *
      * @param string $table_name unused
      * @param array $entries unused
-     * @return int
+     * @return int the number of inflected words
      */
     public function insert_entries($table_name = null, $entries = null)
     {
@@ -335,9 +370,10 @@ class word extends common
     }
 
     /**
+     * Creates and loads the inflected words in the database
      *
      * @param string $part_of_speech used only for testing purposes
-     * @return int
+     * @return int the number of inflected words
      */
     public function load_words($part_of_speech = null)
     {
@@ -347,6 +383,12 @@ class word extends common
         return $count;
     }
 
+    /**
+     * Returns an entry inflected words for testing purposes
+     *
+     * @param int $entry_id
+     * @return array the inflected words
+     */
     public function test_inflect_entry($entry_id)
     {
         $sql = "SELECT * from dictionary WHERE id = $entry_id";

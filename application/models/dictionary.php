@@ -638,7 +638,7 @@ class dictionary extends common
     }
 
     /**
-     * Reads, parses and loads the dictionary entries into the database
+     * Reads, parses and loads the dictionary entries in the database
      *
      * @return int the number of dictionary entries
      */

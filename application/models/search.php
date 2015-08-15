@@ -1,8 +1,16 @@
 <?php
 require_once 'common.php';
 
+/**
+ * Latin word search
+ */
 class search extends common
 {
+    /**
+     * The select statement to search an inflected word
+     *
+     * @var string
+     */
     public $sql_select = '
         SELECT
             dictionary.id             AS entry_id,
@@ -53,7 +61,9 @@ class search extends common
         WHERE word.word = %s;
     ';
 
+
     /**
+     * The inflected words views
      *
      * @var string
      */
@@ -92,16 +102,21 @@ class search extends common
             gender;
     ';
 
+    /**
+     * Creates the wiews
+     */
     public function load_search()
     {
         $this->pdo->exec($this->sql_views_and_indexes);
     }
 
     /**
+     * Verifies if the inflected word is actually valid
      *
      * @param array $inflection
      * @return boolean
      * @see LIST_SWEEP() in source/list_sweep.adb
+     * @todo move to word class
      */
     public function is_valid_inflection($inflection)
     {
@@ -132,18 +147,14 @@ class search extends common
         return true;
     }
 
-    public function search_word($word)
-    {
-        $word = $this->pdo->quote($word);
-        $sql = sprintf($this->sql_select, $word);
-        $statement = $this->pdo->query($sql);
-        $inflections = $statement->fetchAll(PDO::FETCH_ASSOC);
-        $inflections = $this->validate_inflections($inflections);
-
-        return $inflections;
-    }
-
-    public function validate_inflections($inflections)
+    /**
+     * Removes invalid inflections
+     *
+     * @param array $inflections
+     * @return array the valid inflections
+     * @todo move to word class
+     */
+    public function remove_invalid_inflections($inflections)
     {
         $valid_inflections = [];
 
@@ -156,4 +167,20 @@ class search extends common
         return $valid_inflections;
     }
 
+    /**
+     * Searches an inflected word
+     *
+     * @param string $word
+     * @return array the corresponding inflections and dictionary entries
+     */
+    public function search_word($word)
+    {
+        $word = $this->pdo->quote($word);
+        $sql = sprintf($this->sql_select, $word);
+        $statement = $this->pdo->query($sql);
+        $inflections = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $inflections = $this->remove_invalid_inflections($inflections);
+
+        return $inflections;
+    }
 }

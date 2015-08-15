@@ -1,0 +1,13 @@
+Things to do
+============
+
+- process packons
+- finish sweeping
+- implement tricks
+- process uniques
+- check parsing
+- implement user interface, including options
+- implement search tests to compare with whitaker words output
+- implement unit tests
+- implement English to Latin
+- translate meanings in other languages
