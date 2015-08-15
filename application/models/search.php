@@ -153,12 +153,22 @@ class search extends common
                 return false;
             }
 
-            if ($inflection['entry_verb_kind'] == 'SEMIDEP' and // TODO: fix
-                $inflection['inflection_voice'] == 'ACTIVE' and
-                in_array($inflection['inflection_mood'], ['IND', 'SUB', 'IMP', 'INF']))
-            {
-                // this is a deponent verb in the active voice, eg "adfat", rejects the inflection
-                return false;
+            if ($inflection['entry_verb_kind'] == 'SEMIDEP') {
+                if ($inflection['inflection_voice'] == 'PASSIVE' and
+                    in_array($inflection['inflection_tense'], ['PRES', 'IMPF', 'FUT']) and
+                    in_array($inflection['inflection_mood'], ['IND', 'SUB', 'IMP']))
+                {
+                    // this is a semi-deponent verb in the active voice, eg "auderis", rejects the inflection
+                    return false;
+                }
+
+                if ($inflection['inflection_voice'] == 'ACTIVE' and
+                    in_array($inflection['inflection_tense'], ['PERF', 'PLUP', 'FUTP']) and
+                    in_array($inflection['inflection_mood'], ['IND', 'SUB', 'IMP']))
+                {
+                    // this is a semi-deponent verb in the active voice, eg "arfecisti", rejects the inflection
+                    return false;
+                }
             }
         }
 

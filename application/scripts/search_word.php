@@ -5,4 +5,4 @@ require_once 'search.php';
 $search = new search();
 // $search->load_search();
 // print_r($search->search_word('illud'));
-print_r($search->search_word('arfecisti'));
+print_r($search->search_word('auderis'));
