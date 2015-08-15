@@ -443,8 +443,8 @@ class dictionary extends common
      * @var string
      */
     public $sql_views_and_indexes = '
-        DROP VIEW IF EXISTS entries_by_part_of_speech;
-        CREATE VIEW entries_by_part_of_speech AS
+        DROP VIEW IF EXISTS count_dictionary_entries;
+        CREATE VIEW count_dictionary_entries AS
         SELECT
             part_of_speech,
             count(part_of_speech) AS count

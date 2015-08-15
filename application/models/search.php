@@ -121,26 +121,44 @@ class search extends common
     public function is_valid_inflection($inflection)
     {
         if ($inflection['inflection_part_of_speech'] == 'V') {
-            if ($inflection['inflection_which'] == 3) {
-                if ($inflection['inflection_variant'] == 1) {
-                    if ($inflection['inflection_tense'] == 'PRES') {
-                        if ($inflection['inflection_voice'] == 'ACTIVE') {
-                            if ($inflection['inflection_mood'] == 'IMP') {
-                                if ($inflection['inflection_person'] == 2) {
-                                    if ($inflection['inflection_number'] == 'S') {
-                                        if ($inflection['ending_size'] == 0) {
-                                            $stem = $this->get_stem($inflection['stem_key'], $inflection, $inflection['inflection_id']);
+            if ($inflection['inflection_which'] == 3 and
+                $inflection['inflection_variant'] == 1 and
+                $inflection['inflection_tense'] == 'PRES' and
+                $inflection['inflection_voice'] == 'ACTIVE' and
+                $inflection['inflection_mood'] == 'IMP' and
+                $inflection['inflection_person'] == 2 and
+                $inflection['inflection_number'] == 'S' and
+                $inflection['ending_size'] == 0)
+            {
+                $stem = $this->get_stem($inflection['stem_key'], $inflection, $inflection['inflection_id']);
 
-                                            if (! preg_match('~(dic|duc|fac|fer)$~', $stem)) {
-                                                return false;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                if (! preg_match('~(dic|duc|fac|fer)$~', $stem)) {
+                    // this is not a verb built on dic/duc/fac/fer, eg "illud", rejects the shortened imperative
+                    return false;
                 }
+            }
+
+            if ($inflection['entry_verb_kind'] == 'IMPERS' and
+                $inflection['inflection_person'] != 3)
+            {
+                // this is an impersonal verb at the first or second person, eg "contonas", rejects the inflection
+                return false;
+            }
+
+            if ($inflection['entry_verb_kind'] == 'DEP' and
+                $inflection['inflection_voice'] == 'ACTIVE' and
+                in_array($inflection['inflection_mood'], ['IND', 'SUB', 'IMP', 'INF']))
+            {
+                // this is a deponent verb in the active voice, eg "adfat", rejects the inflection
+                return false;
+            }
+
+            if ($inflection['entry_verb_kind'] == 'SEMIDEP' and // TODO: fix
+                $inflection['inflection_voice'] == 'ACTIVE' and
+                in_array($inflection['inflection_mood'], ['IND', 'SUB', 'IMP', 'INF']))
+            {
+                // this is a deponent verb in the active voice, eg "adfat", rejects the inflection
+                return false;
             }
         }
 

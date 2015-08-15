@@ -142,8 +142,8 @@ class word extends common
         DROP INDEX IF EXISTS word_word;
         CREATE INDEX word_word ON word (word);
 
-        DROP VIEW IF EXISTS words_by_part_of_speech;
-        CREATE VIEW words_by_part_of_speech AS
+        DROP VIEW IF EXISTS count_words;
+        CREATE VIEW count_words AS
         SELECT
             inflection.part_of_speech,
             count(inflection.part_of_speech) AS count

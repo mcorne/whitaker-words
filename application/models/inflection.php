@@ -283,8 +283,8 @@ class inflection extends common
         DROP INDEX IF EXISTS inflection_noun;
         CREATE INDEX inflection_noun ON inflection (part_of_speech, which, variant, gender);
 
-        DROP VIEW IF EXISTS inflections_by_part_of_speech;
-        CREATE VIEW inflections_by_part_of_speech AS
+        DROP VIEW IF EXISTS count_inflections;
+        CREATE VIEW count_inflections AS
         SELECT
             part_of_speech,
             count(part_of_speech) AS count
