@@ -111,91 +111,6 @@ class search extends common
     }
 
     /**
-     * Verifies if the inflected word is actually valid
-     *
-     * @param array $inflection
-     * @return boolean
-     * @see LIST_SWEEP() in source/list_sweep.adb
-     * @todo move to word class
-     */
-    public function is_valid_inflection($inflection)
-    {
-        if ($inflection['inflection_part_of_speech'] == 'V') {
-            if ($inflection['inflection_which'] == 3 and
-                $inflection['inflection_variant'] == 1 and
-                $inflection['inflection_tense'] == 'PRES' and
-                $inflection['inflection_voice'] == 'ACTIVE' and
-                $inflection['inflection_mood'] == 'IMP' and
-                $inflection['inflection_person'] == 2 and
-                $inflection['inflection_number'] == 'S' and
-                $inflection['ending_size'] == 0)
-            {
-                $stem = $this->get_stem($inflection['stem_key'], $inflection, $inflection['inflection_id']);
-
-                if (! preg_match('~(dic|duc|fac|fer)$~', $stem)) {
-                    // this is not a verb built on dic/duc/fac/fer, eg "illud", rejects the shortened imperative
-                    return false;
-                }
-            }
-
-            if ($inflection['entry_verb_kind'] == 'IMPERS' and
-                $inflection['inflection_person'] != 3)
-            {
-                // this is an impersonal verb at the first or second person, eg "contonas", rejects the inflection
-                return false;
-            }
-
-            if ($inflection['entry_verb_kind'] == 'DEP' and
-                $inflection['inflection_voice'] == 'ACTIVE' and
-                in_array($inflection['inflection_mood'], ['IND', 'SUB', 'IMP', 'INF']))
-            {
-                // this is a deponent verb in the active voice, eg "adfat", rejects the inflection
-                return false;
-            }
-
-            if ($inflection['entry_verb_kind'] == 'SEMIDEP') {
-                if ($inflection['inflection_voice'] == 'PASSIVE' and
-                    in_array($inflection['inflection_tense'], ['PRES', 'IMPF', 'FUT']) and
-                    in_array($inflection['inflection_mood'], ['IND', 'SUB', 'IMP']))
-                {
-                    // this is a semi-deponent verb in the active voice, eg "auderis", rejects the inflection
-                    return false;
-                }
-
-                if ($inflection['inflection_voice'] == 'ACTIVE' and
-                    in_array($inflection['inflection_tense'], ['PERF', 'PLUP', 'FUTP']) and
-                    in_array($inflection['inflection_mood'], ['IND', 'SUB', 'IMP']))
-                {
-                    // this is a semi-deponent verb in the active voice, eg "arfecisti", rejects the inflection
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Removes invalid inflections
-     *
-     * @param array $inflections
-     * @return array the valid inflections
-     * @todo move to word class
-     */
-    public function remove_invalid_inflections($inflections)
-    {
-        $valid_inflections = [];
-
-        foreach ($inflections as $inflection) {
-            if ($this->is_valid_inflection($inflection)) {
-                $valid_inflections[] = $inflection;
-            }
-        }
-
-        return $valid_inflections;
-    }
-
-    /**
      * Searches an inflected word
      *
      * @param string $word
@@ -207,7 +122,6 @@ class search extends common
         $sql = sprintf($this->sql_select, $word);
         $statement = $this->pdo->query($sql);
         $inflections = $statement->fetchAll(PDO::FETCH_ASSOC);
-        $inflections = $this->remove_invalid_inflections($inflections);
 
         return $inflections;
     }

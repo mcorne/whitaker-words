@@ -2,7 +2,6 @@ Things to do
 ============
 
 - process packons
-- finish sweeping
 - implement tricks
 - process uniques
 - check parsing

@@ -7,12 +7,12 @@ require_once 'common.php';
 class word extends common
 {
     /**
-     * Endings details cache
+     * Inflections cache
      *
      * @var array
-     * @see self::get_endings()
+     * @see self::get_inflections()
      */
-    public $endings;
+    public $inflections;
 
     /**
      * Inflection attributes used in dictionary entries
@@ -46,7 +46,7 @@ class word extends common
     public $part_of_speech;
 
     /**
-     * The select statements to extract inflection details
+     * The select statements to extract inflection details including the id, ending and stem key
      *
      * @var array
      * @see self::$inflection_attributes, the vsprintf() args order must be the same in both arrays
@@ -54,63 +54,63 @@ class word extends common
      */
     public $sql_selects = [
         'ADJ'    => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "ADJ"
             AND (which = %1$d OR which = 0)
             AND (variant = %2$d OR variant = 0)
             AND (comparison = "%3$s" OR "%3$s" = "X")
         ',
         'ADV'    => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "ADV"
             AND comparison = "%s"
         ',
         'CONJ'   => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "CONJ"
         ',
         'INTERJ' => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "INTERJ"
         ',
         'N'      => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "N"
             AND which = %1$d
             AND (variant = %2$d OR variant = 0)
             AND (gender = "%3$s" OR gender = "C" OR gender = "X")
         ',
         'NUM'    => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "NUM"
             AND (which = %1$d OR which = 0)
             AND (variant = %2$d OR variant = 0)
             AND (numeral_sort = "%3$s" OR "%3$s" = "X")
         ',
         'PREP'   => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "PREP"
             AND cases = "%s"
         ',
         'PRON'   => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "PRON"
             AND which = %1$d
             AND (variant = %2$d OR variant = 0)
         ',
         'SUPINE' => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "SUPINE"
             AND %1$d != 9
         ',
         'V'      => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "V"
             AND (which = %1$d OR which = 0 AND %1$d != 9)
             AND (variant = %2$d OR variant = 0)
         ',
         'VPAR'   => '
-            SELECT id, ending, stem_key FROM inflection
+            SELECT * FROM inflection
             WHERE part_of_speech = "VPAR"
             AND (which = %1$d OR which = 0 AND %1$d != 9)
             AND (variant = %2$d OR variant = 0)
@@ -170,35 +170,35 @@ class word extends common
     /**
      * Adds all possible endings to the dictionary entry
      *
-     * @param array $endings
+     * @param array $inflections
      * @param array $entry
      * @return array the entry inflections
      * @throws Exception
      */
-    public function add_endings($endings, $entry)
+    public function add_endings($inflections, $entry)
     {
-        $inflections = [];
+        $words = [];
 
-        foreach ($endings as $ending) {
-            $stem = $this->get_stem($ending['stem_key'], $entry, $ending['id']);
+        foreach ($inflections as $inflection) {
+            $stem = $this->get_stem($inflection['stem_key'], $entry, $inflection['id']);
 
             if (! $stem) {
-                throw new Exception("Empty stem or invalid stem key: {$ending['stem_key']} in entry id: {$entry['id']}");
+                throw new Exception("Empty stem or invalid stem key: {$inflection['stem_key']} in entry id: {$entry['id']}");
             }
 
-            if ($stem == 'zzz') {
-                // this is a stem not to be used, no inflection
+            if ($stem == 'zzz' or ! $this->is_valid_inflection($inflection, $entry)) {
+                // this is a stem not to be used or not a valid inflection, ignores the inflection
                 continue;
             }
 
-            $inflections[] = [
+            $words[] = [
                 'entry_id'      => $entry['id'],
-                'inflection_id' => $ending['id'],
-                'word'          => $stem . $ending['ending'],
+                'inflection_id' => $inflection['id'],
+                'word'          => $stem . $inflection['ending'],
             ];
         }
 
-        return $inflections;
+        return $words;
     }
 
     /**
@@ -271,21 +271,21 @@ class word extends common
     }
 
     /**
-     * Returns the entry possible endings
+     * Returns the entry possible inflections
      *
      * @param array $entry
-     * @return array arrays of id, ending and stem_key
+     * @return array the inflections
      * @throws Exception
      */
-    public function get_endings($entry)
+    public function get_inflections($entry)
     {
         $part_of_speech = $entry['part_of_speech'];
 
         $attributes = $this->extract_attributes($part_of_speech, $entry);
         $key = "$part_of_speech|" . implode('|', $attributes);
 
-        if (isset($this->endings[$key])) {
-            return $this->endings[$key];
+        if (isset($this->inflections[$key])) {
+            return $this->inflections[$key];
         }
 
         if (! isset($this->sql_selects[$part_of_speech])) {
@@ -295,9 +295,9 @@ class word extends common
         $sql = vsprintf($this->sql_selects[$part_of_speech], $attributes);
 
         $statement = $this->pdo->query($sql);
-        $this->endings[$key] = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $this->inflections[$key] = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-        return $this->endings[$key];
+        return $this->inflections[$key];
     }
 
     /**
@@ -310,8 +310,8 @@ class word extends common
     public function inflect_entry($entry)
     {
         $entry = $this->fix_entry($entry);
-        $endings = $this->get_endings($entry);
-        $words = $this->add_endings($endings, $entry);
+        $inflections = $this->get_inflections($entry);
+        $words = $this->add_endings($inflections, $entry);
 
         return $words;
     }
@@ -367,6 +367,73 @@ class word extends common
         }
 
         return $word_count;
+    }
+
+    /**
+     * Verifies the inflection is valid
+     *
+     * @param array $inflection
+     * @param array $entry
+     * @return boolean
+     * @see LIST_SWEEP() in source/list_sweep.adb
+     */
+    public function is_valid_inflection($inflection, $entry)
+    {
+        if ($inflection['part_of_speech'] == 'V') {
+
+            if ($inflection['which'] == 3 and
+                $inflection['variant'] == 1 and
+                $inflection['tense'] == 'PRES' and
+                $inflection['voice'] == 'ACTIVE' and
+                $inflection['mood'] == 'IMP' and
+                $inflection['person'] == 2 and
+                $inflection['number'] == 'S' and
+                $inflection['ending_size'] == 0)
+            {
+                $stem = $this->get_stem($inflection['stem_key'], $entry, $inflection['id']);
+
+                if (! preg_match('~(dic|duc|fac|fer)$~', $stem)) {
+                    // this is not a verb built on dic/duc/fac/fer, eg "illud", rejects the shortened imperative
+                    return false;
+                }
+            }
+
+            if ($entry['verb_kind'] == 'IMPERS' and
+                $inflection['person'] != 3)
+            {
+                // this is an impersonal verb at the first or second person, eg "contonas", rejects the inflection
+                return false;
+            }
+
+            if ($entry['verb_kind'] == 'DEP' and
+                $inflection['voice'] == 'ACTIVE' and
+                in_array($inflection['mood'], ['IND', 'SUB', 'IMP', 'INF']))
+            {
+                // this is a deponent verb in the active voice, eg "adfat", rejects the inflection
+                return false;
+            }
+
+            if ($entry['verb_kind'] == 'SEMIDEP') {
+
+                if ($inflection['voice'] == 'PASSIVE' and
+                    in_array($inflection['tense'], ['PRES', 'IMPF', 'FUT']) and
+                    in_array($inflection['mood'], ['IND', 'SUB', 'IMP']))
+                {
+                    // this is a semi-deponent verb in the active voice, eg "auderis", rejects the inflection
+                    return false;
+                }
+
+                if ($inflection['voice'] == 'ACTIVE' and
+                    in_array($inflection['tense'], ['PERF', 'PLUP', 'FUTP']) and
+                    in_array($inflection['mood'], ['IND', 'SUB', 'IMP']))
+                {
+                    // this is a semi-deponent verb in the active voice, eg "arfecisti", rejects the inflection
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
