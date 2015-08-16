@@ -4,9 +4,9 @@ Things to do
 - process packons
 - implement tricks
 - process uniques
-- check parsing
+- check parsing: parse.adb PASS(), PARSE_LINE(), word_package.adb WORD() etc.
 - implement user interface, including options
-- implement search tests to compare with whitaker words output
+- implement search tests to compare with whitaker words output using inflected words and words from a corpus
 - implement unit tests
 - implement English to Latin
 - translate meanings in other languages
